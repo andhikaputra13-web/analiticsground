@@ -1,1228 +1,132 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
-
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0B0F19">
-    <meta name="description"
-        content="GeoShield AI - Aplikasi Deteksi dan Pemantauan Risiko Bencana Tanah Longsor Berbasis Analisis Citra Visual Spasial.">
-
-    <title>GeoShield AI - Sistem Deteksi & Mitigasi Risiko Longsor</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
-        rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Risiko Bencana Longsor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                        display: ['"Space Grotesk"', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        dark: {
-                            base: '#070A11',
-                            surface: '#0E131F',
-                            card: '#141A29',
-                            cardHover: '#1A2236',
-                            border: 'rgba(255, 255, 255, 0.08)',
-                        },
-                        danger: {
-                            500: '#ef4444',
-                            glow: 'rgba(239, 68, 68, 0.35)',
-                        },
-                        warning: {
-                            500: '#f59e0b',
-                            glow: 'rgba(245, 158, 11, 0.35)',
-                        },
-                        safe: {
-                            500: '#10b981',
-                            glow: 'rgba(16, 185, 129, 0.35)',
-                        }
-                    },
-                    boxShadow: {
-                        'neon-blue': '0 0 25px -5px rgba(59, 130, 246, 0.4)',
-                        'neon-danger': '0 0 30px -5px rgba(239, 68, 68, 0.45)',
-                        'neon-warning': '0 0 25px -5px rgba(245, 158, 11, 0.4)',
-                        'neon-safe': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
-                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        /* Custom Modern Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(14, 19, 31, 0.5);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2563eb;
-            border-radius: 9999px;
-        }
-
-        /* Glassmorphism Classes */
-        .glass-card {
-            background: rgba(20, 26, 41, 0.78);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.09);
-        }
-
-        .glass-nav {
-            background: rgba(11, 15, 25, 0.88);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* Animations */
-        @keyframes scanLaser {
-            0% {
-                top: 0%;
-                opacity: 0.9;
-            }
-
-            50% {
-                top: 96%;
-                opacity: 1;
-            }
-
-            100% {
-                top: 0%;
-                opacity: 0.9;
-            }
-        }
-
-        .scanning-laser {
-            animation: scanLaser 2.2s ease-in-out infinite;
-        }
-
-        @keyframes radarSweep {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .radar-sweep-anim {
-            animation: radarSweep 3.5s linear infinite;
-        }
-
-        @keyframes pulseGlow {
-
-            0%,
-            100% {
-                opacity: 0.4;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.8;
-                transform: scale(1.08);
-            }
-        }
-
-        .pulse-glow-anim {
-            animation: pulseGlow 2.5s ease-in-out infinite;
-        }
-
-        /* Phone Mockup Frame (Desktop) */
-        @media (min-width: 641px) {
-            .mobile-simulator {
-                max-width: 440px;
-                min-height: 860px;
-                border-radius: 48px;
-                border: 9px solid #1e293b;
-                box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1);
-                margin: 20px auto;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .mobile-simulator.fullwidth-mode {
-                max-width: 768px;
-                border-radius: 24px;
-                border-width: 2px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .mobile-simulator {
-                width: 100%;
-                min-height: 100vh;
-                border: none;
-                border-radius: 0;
-                margin: 0;
-            }
-
-            .phone-notch {
-                display: none;
-            }
-        }
-
-        /* Touch interaction optimization */
-        button,
-        a,
-        input,
-        select {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Animated Circular Gauge */
-        .gauge-circle-bg {
-            stroke: rgba(255, 255, 255, 0.08);
-        }
-
-        .gauge-circle-progress {
-            transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
-            stroke-linecap: round;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
-<body
-    class="bg-dark-base text-slate-100 font-sans min-h-screen antialiased selection:bg-blue-600 selection:text-white flex flex-col items-center justify-start pb-6">
-
-    <!-- Top Viewport Mode Switcher (Visible on desktop only) -->
-    <aside aria-label="Pengaturan Tampilan Desktop"
-        class="hidden sm:flex items-center justify-between w-full max-w-xl px-4 pt-3 pb-1 text-xs text-slate-400">
-        <div class="flex items-center space-x-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="font-medium text-slate-300">GeoShield Mobile AI Simulator</span>
+    <!-- Header -->
+    <header class="bg-blue-700 text-white p-6 shadow-md">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">GeoAnalyzer Pro</h1>
+            <p class="text-sm text-blue-200">Sistem Deteksi Risiko Longsor</p>
         </div>
-        <div class="flex items-center bg-dark-card border border-slate-700/60 rounded-full p-1 space-x-1">
-            <button id="viewPhoneBtn"
-                class="px-3 py-1 rounded-full bg-blue-600 text-white font-medium flex items-center space-x-1 transition-all">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                <span>Ponsel</span>
-            </button>
-            <button id="viewWideBtn"
-                class="px-3 py-1 rounded-full text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition-all">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                    </path>
-                </svg>
-                <span>Tablet / Luas</span>
-            </button>
-        </div>
-    </aside>
+    </header>
 
-    <!-- Main Mobile Application Container -->
-    <div id="appContainer"
-        class="mobile-simulator w-full bg-dark-base flex flex-col text-slate-100 shadow-2xl relative">
-
-        <!-- Phone Dynamic Island & Status Bar (Simulasi Layar Ponsel Modern) -->
-        <div
-            class="phone-notch sticky top-0 z-50 bg-dark-base/95 backdrop-blur-md px-6 pt-3 pb-2 flex items-center justify-between text-xs text-slate-400 select-none border-b border-white/[0.04]">
-            <span id="statusBarClock" class="font-bold text-slate-200 tracking-tight text-[13px]">12:45</span>
-
-            <!-- Dynamic Island Capsule -->
-            <div
-                class="h-4.5 px-3 py-0.5 bg-black/80 border border-slate-700/60 rounded-full flex items-center space-x-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-[10px] font-mono text-emerald-400 tracking-wider font-semibold">AI SENSOR
-                    ACTIVE</span>
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-6 mt-6">
+        
+        <!-- Upload Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">1. Masukkan Gambar Lokasi</h2>
+            <p class="text-gray-600 mb-6 text-sm">Unggah foto lereng, tebing, atau area tanah yang ingin dianalisis kondisinya.</p>
+            
+            <div class="flex flex-col items-center justify-center border-2 border-dashed border-blue-300 rounded-lg p-10 bg-blue-50 hover:bg-blue-100 transition-colors">
+                <input type="file" id="imageInput" accept="image/*" class="hidden">
+                <label for="imageInput" class="cursor-pointer flex flex-col items-center">
+                    <svg class="w-12 h-12 text-blue-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span class="text-blue-700 font-semibold bg-white px-4 py-2 rounded shadow-sm border border-blue-200">Pilih Gambar</span>
+                    <span class="text-xs text-gray-500 mt-2" id="fileName">Format didukung: JPG, PNG</span>
+                </label>
             </div>
 
-            <!-- Signal & Battery -->
-            <div class="flex items-center space-x-1.5 text-slate-300">
-                <!-- 5G -->
-                <span class="text-[10px] font-bold text-slate-300">5G</span>
-                <!-- Wifi -->
-                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0012 4zm0 3c3.8 0 7.23 1.54 9.75 4.03L12 19.82 2.25 11.03C4.77 8.54 8.2 7 12 7z" />
-                </svg>
-                <!-- Battery -->
-                <div class="w-5 h-2.5 border border-slate-400 rounded-sm p-0.5 flex items-center">
-                    <div class="h-full bg-emerald-400 rounded-[1px] w-[88%]"></div>
-                </div>
+            <!-- Image Preview -->
+            <div id="previewContainer" class="hidden mt-6 flex flex-col items-center">
+                <img id="imagePreview" class="max-h-64 rounded-lg shadow-md border" src="" alt="Preview">
+                <button id="analyzeBtn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                    Mulai Analisis Gambar
+                </button>
             </div>
         </div>
 
-        <!-- App Main Header -->
-        <header
-            class="px-5 pt-3 pb-3 bg-dark-surface/90 backdrop-blur-md border-b border-slate-800/80 sticky top-[38px] sm:top-0 z-40">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2.5">
-                    <div
-                        class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30 ring-1 ring-white/20">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-1.5">
-                            <h1 class="font-display font-bold text-base tracking-tight text-white">GeoShield <span
-                                    class="text-blue-400 text-xs px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 font-mono">PRO</span>
-                            </h1>
-                        </div>
-                        <p class="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Sistem Deteksi Rawan
-                            Longsor</p>
-                    </div>
-                </div>
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden bg-white rounded-xl shadow-lg p-8 mb-8 text-center flex-col items-center justify-center">
+            <div class="loader mb-4 mx-auto"></div>
+            <h3 class="text-lg font-bold text-blue-700">AI sedang memproses gambar...</h3>
+            <p class="text-gray-500 text-sm mt-2">Mengekstrak data kemiringan, jenis tanah, tutupan vegetasi, dan drainase.</p>
+        </div>
 
-                <!-- Header Actions: Sound & SOS -->
-                <div class="flex items-center space-x-1.5">
-                    <button id="soundToggleBtn" title="Toggle Sound FX"
-                        class="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 flex items-center justify-center border border-slate-700/70 transition-colors">
-                        <svg id="soundIconOn" class="w-4 h-4 hidden" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z">
-                            </path>
-                        </svg>
-                        <svg id="soundIconOff" class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2">
-                            </path>
-                        </svg>
-                    </button>
-                    <button id="openSosModalBtn"
-                        class="px-2.5 py-1.5 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/40 text-xs font-bold flex items-center space-x-1 transition-transform active:scale-95 shadow-sm shadow-red-900/40">
-                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping mr-0.5"></span>
-                        <span>SOS</span>
-                    </button>
+        <!-- Results Section -->
+        <div id="resultSection" class="hidden bg-white rounded-xl shadow-lg p-8 mb-8 border-t-4 border-red-500">
+            <h2 class="text-xl font-bold mb-6 text-gray-800 border-b pb-2">2. Hasil Analisis Geo-Spasial</h2>
+            
+            <!-- Grid Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Kemiringan -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Kemiringan Tanah</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="resSlope">-</p>
+                </div>
+                <!-- Jenis Tanah -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Karakteristik Tanah</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="resSoil">-</p>
+                </div>
+                <!-- Vegetasi -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Tutupan Vegetasi</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="resVeg">-</p>
+                </div>
+                <!-- Drainase -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Kondisi Drainase</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="resDrain">-</p>
                 </div>
             </div>
 
-            <!-- Environmental Telemetry Weather Strip -->
-            <div
-                class="mt-2.5 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between text-[11px] text-slate-300">
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-blue-400">🌧️</span>
-                    <span class="font-medium">Curah Hujan: <b class="text-blue-300">38 mm/jam</b></span>
+            <!-- Conclusion Alert -->
+            <div class="bg-red-50 border border-red-200 p-6 rounded-xl flex flex-col md:flex-row items-center gap-6">
+                <!-- Percentage Circle -->
+                <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center rounded-full bg-red-100 border-4 border-red-500 shadow-inner">
+                    <span id="resPercentage" class="text-3xl font-extrabold text-red-600">0%</span>
                 </div>
-                <span class="text-slate-600">|</span>
-                <div class="flex items-center space-x-1">
-                    <span class="text-amber-400">📍</span>
-                    <span class="text-slate-400">GPS: -6.914, 107.609</span>
-                </div>
-                <span class="text-slate-600">|</span>
-                <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-semibold text-[10px]">SIAGA
-                    2</span>
-            </div>
-        </header>
-
-        <!-- Main Scrollable App Views -->
-        <main class="flex-1 overflow-y-auto px-4 pt-4 pb-24 space-y-4">
-
-            <!-- ============================================== -->
-            <!-- TAB 1: DETEKSI & SCANNER AI                    -->
-            <!-- ============================================== -->
-            <section id="tabDetect" class="space-y-4">
-
-                <!-- Upload & Camera Control Card -->
-                <div class="glass-card rounded-2xl p-4 relative overflow-hidden shadow-glass">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center space-x-2">
-                            <span
-                                class="w-6 h-6 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
-                            <h2 class="text-sm font-bold text-slate-100">Pindai / Unggah Foto Lereng</h2>
-                        </div>
-                        <span class="text-[10px] text-slate-400 font-mono">JPG, PNG, WEBP</span>
-                    </div>
-
-                    <p class="text-xs text-slate-400 mb-3.5 leading-relaxed">
-                        Foto lereng gunung, tebing jalan raya, atau permukaan tanah untuk deteksi rekahan, vegetasi, dan
-                        stabilitas kontur.
+                
+                <!-- Conclusion Text -->
+                <div>
+                    <h3 class="text-lg font-bold text-red-700 mb-2">Potensi Terjadi Longsor</h3>
+                    <p id="resConclusion" class="text-gray-700 leading-relaxed">
+                        -
                     </p>
-
-                    <!-- Real Hidden File Inputs -->
-                    <input type="file" id="imageInput" accept="image/*" class="hidden">
-                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
-
-                    <!-- Camera & Gallery Quick Action Buttons -->
-                    <div class="grid grid-cols-2 gap-2.5 mb-3">
-                        <button id="btnTriggerCamera" type="button"
-                            class="flex items-center justify-center space-x-2 py-3 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-md shadow-blue-600/30 active:scale-98 transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            <span>Buka Kamera</span>
-                        </button>
-                        <button id="btnTriggerGallery" type="button"
-                            class="flex items-center justify-center space-x-2 py-3 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 font-semibold text-xs active:scale-98 transition-all">
-                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                            <span>Galeri Foto</span>
-                        </button>
-                    </div>
-
-                    <!-- Drag & Drop / Tap Zone -->
-                    <label for="imageInput"
-                        class="cursor-pointer border-2 border-dashed border-slate-700 hover:border-blue-500/60 rounded-xl p-3.5 flex flex-col items-center justify-center bg-slate-900/50 hover:bg-slate-900/80 transition-all text-center group">
-                        <div
-                            class="w-9 h-9 rounded-full bg-blue-500/10 group-hover:bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1.5 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                </path>
-                            </svg>
-                        </div>
-                        <span
-                            class="text-xs font-semibold text-slate-200 group-hover:text-blue-400 transition-colors">Ketuk
-                            atau seret file gambar ke sini</span>
-                        <span id="fileName" class="text-[11px] text-slate-400 mt-1 font-mono">Format didukung: JPG, PNG,
-                            WEBP</span>
-                    </label>
-
-                    <!-- Quick 1-Click Slope Sample Preset Selector -->
-                    <div class="mt-3.5 pt-3 border-t border-slate-800">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Coba Sampel
-                                Foto Lereng:</span>
-                            <span class="text-[10px] text-blue-400">Uji 1-Klik</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <!-- Sample 1: Kritis -->
-                            <button type="button"
-                                class="sample-preset-btn text-left p-1.5 rounded-lg bg-slate-900/70 hover:bg-slate-800 border border-red-500/30 hover:border-red-500 transition-all group"
-                                data-src="assets/sample_high_risk.jpg" data-name="sample_high_risk.jpg">
-                                <div class="h-14 rounded-md overflow-hidden bg-slate-800 relative mb-1">
-                                    <img src="assets/sample_high_risk.jpg" alt="Tebing Kritis"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <span
-                                        class="absolute bottom-0.5 right-0.5 px-1 py-0.2 bg-red-600/90 text-[9px] font-bold text-white rounded">Kritis</span>
-                                </div>
-                                <p class="text-[10px] font-medium text-slate-300 truncate">Tebing Curam</p>
-                            </button>
-
-                            <!-- Sample 2: Waspada -->
-                            <button type="button"
-                                class="sample-preset-btn text-left p-1.5 rounded-lg bg-slate-900/70 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-500 transition-all group"
-                                data-src="assets/sample_moderate_risk.jpg" data-name="sample_moderate_risk.jpg">
-                                <div class="h-14 rounded-md overflow-hidden bg-slate-800 relative mb-1">
-                                    <img src="assets/sample_moderate_risk.jpg" alt="Lereng Jalan"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <span
-                                        class="absolute bottom-0.5 right-0.5 px-1 py-0.2 bg-amber-600/90 text-[9px] font-bold text-white rounded">Waspada</span>
-                                </div>
-                                <p class="text-[10px] font-medium text-slate-300 truncate">Lereng Jalan</p>
-                            </button>
-
-                            <!-- Sample 3: Aman -->
-                            <button type="button"
-                                class="sample-preset-btn text-left p-1.5 rounded-lg bg-slate-900/70 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500 transition-all group"
-                                data-src="assets/sample_low_risk.jpg" data-name="sample_low_risk.jpg">
-                                <div class="h-14 rounded-md overflow-hidden bg-slate-800 relative mb-1">
-                                    <img src="assets/sample_low_risk.jpg" alt="Perbukitan Stabil"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <span
-                                        class="absolute bottom-0.5 right-0.5 px-1 py-0.2 bg-emerald-600/90 text-[9px] font-bold text-white rounded">Stabil</span>
-                                </div>
-                                <p class="text-[10px] font-medium text-slate-300 truncate">Bukit Hijau</p>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Preview & Active Scanner HUD Container -->
-                <div id="previewContainer"
-                    class="hidden glass-card rounded-2xl p-4 relative shadow-glass transition-all duration-300">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <span class="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
-                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                            <span>Pratinjau Citra Geospasial</span>
+                    <div class="mt-4">
+                        <span class="inline-block bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                            Peringatan: Perlu Pemeriksaan Lanjut!
                         </span>
-                        <button id="cancelPreviewBtn"
-                            class="text-slate-400 hover:text-red-400 text-xs font-semibold px-2 py-0.5 rounded bg-slate-800">
-                            Ganti Foto
-                        </button>
                     </div>
-
-                    <!-- Image Viewport with HUD Overlay Elements -->
-                    <div
-                        class="relative rounded-xl overflow-hidden bg-black/60 border border-slate-700/80 aspect-[4/3] flex items-center justify-center">
-                        <img id="imagePreview" src="" alt="Pratinjau Lereng" class="w-full h-full object-cover">
-
-                        <!-- HUD Target Reticles on corners -->
-                        <div class="absolute inset-2 pointer-events-none">
-                            <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
-                            <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400"></div>
-                            <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400"></div>
-                            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
-
-                            <!-- Grid Overlay Lines -->
-                            <div class="w-full h-full border border-cyan-500/10 grid grid-cols-3 grid-rows-3">
-                                <div class="border-r border-b border-cyan-500/10"></div>
-                                <div class="border-r border-b border-cyan-500/10"></div>
-                                <div class="border-b border-cyan-500/10"></div>
-                                <div class="border-r border-b border-cyan-500/10"></div>
-                                <div class="border-r border-b border-cyan-500/10 flex items-center justify-center">
-                                    <div
-                                        class="w-6 h-6 rounded-full border border-cyan-400/30 flex items-center justify-center">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
-                                    </div>
-                                </div>
-                                <div class="border-b border-cyan-500/10"></div>
-                                <div class="border-r border-cyan-500/10"></div>
-                                <div class="border-r border-cyan-500/10"></div>
-                                <div></div>
-                            </div>
-                        </div>
-
-                        <!-- Scanning Laser Line (Activated during analyze) -->
-                        <div id="scannerLaser"
-                            class="hidden absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#22d3ee] scanning-laser pointer-events-none">
-                        </div>
-
-                        <!-- Telemetry Badge Over Image -->
-                        <div
-                            class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 backdrop-blur-md border border-cyan-500/30 text-[10px] font-mono text-cyan-300 flex items-center space-x-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                            <span>SLOPE_VISION_AI // READY</span>
-                        </div>
-                    </div>
-
-                    <!-- Main Trigger Analyze Button -->
-                    <button id="analyzeBtn"
-                        class="mt-4 w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-lg shadow-blue-600/40 flex items-center justify-center space-x-2 active:scale-[0.98] transition-all">
-                        <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
-                            </path>
-                        </svg>
-                        <span>Mulai Analisis Risiko Longsor</span>
-                    </button>
-                </div>
-
-                <!-- Loading & Neural Scanning HUD -->
-                <div id="loadingState"
-                    class="hidden glass-card rounded-2xl p-6 text-center shadow-glass flex-col items-center justify-center relative overflow-hidden">
-                    <div class="relative w-24 h-24 mb-4 flex items-center justify-center">
-                        <!-- Radar Sweep Ring -->
-                        <div class="absolute inset-0 rounded-full border border-blue-500/30"></div>
-                        <div
-                            class="absolute inset-2 rounded-full border border-dashed border-cyan-400/40 radar-sweep-anim">
-                        </div>
-                        <div class="absolute inset-5 rounded-full bg-blue-600/10 pulse-glow-anim"></div>
-
-                        <!-- Percentage Center -->
-                        <span id="scanPercentCounter"
-                            class="text-xl font-display font-bold text-cyan-400 font-mono">0%</span>
-                    </div>
-
-                    <h3 class="text-sm font-bold text-slate-100 flex items-center justify-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                        <span>AI Memindai Parameter Geologis...</span>
-                    </h3>
-
-                    <!-- Progress Step Indicator Text -->
-                    <p id="scanTelemetryText"
-                        class="text-xs text-blue-300 font-mono mt-2 h-6 flex items-center justify-center transition-all">
-                        Inisialisasi pemindaian citra...
-                    </p>
-
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
-                        <div id="scanProgressBar"
-                            class="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 w-0 transition-all duration-300">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ============================================== -->
-                <!-- RESULTS SECTION DASHBOARD                      -->
-                <!-- ============================================== -->
-                <div id="resultSection" class="hidden space-y-4">
-
-                    <!-- Main Hazard Score Card with Dynamic Circular Gauge -->
-                    <div id="hazardCard"
-                        class="glass-card rounded-2xl p-5 border-l-4 border-red-500 relative overflow-hidden shadow-neon-danger transition-all">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Hasil
-                                Diagnosis AI Geosains</span>
-                            <span id="riskBadge"
-                                class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-red-600 text-white shadow-sm shadow-red-600/50">
-                                Bahaya Kritis
-                            </span>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 py-2">
-                            <!-- Circular SVG Gauge -->
-                            <div class="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle class="gauge-circle-bg" cx="50" cy="50" r="40" stroke-width="8"
-                                        fill="transparent" />
-                                    <circle id="gaugeProgressCircle" class="gauge-circle-progress" cx="50" cy="50"
-                                        r="40" stroke-width="8" stroke="#ef4444" stroke-dasharray="251.2"
-                                        stroke-dashoffset="251.2" fill="transparent" />
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span id="resPercentage"
-                                        class="text-2xl font-black font-display text-red-500 tracking-tight leading-none">0%</span>
-                                    <span
-                                        class="text-[9px] uppercase font-bold text-slate-400 mt-0.5">Probabilitas</span>
-                                </div>
-                            </div>
-
-                            <!-- Hazard Title & Diagnostic Description -->
-                            <div class="text-left flex-1">
-                                <h3 id="hazardTitle"
-                                    class="text-base font-bold text-red-400 mb-1 flex items-center space-x-1.5">
-                                    <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor"
-                                        viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>Tingkat Kerawanan Tinggi</span>
-                                </h3>
-                                <p id="resConclusion" class="text-xs text-slate-300 leading-relaxed font-sans">
-                                    -
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Status Warning Alert Bar -->
-                        <div id="riskStatusBar"
-                            class="mt-3 p-2.5 rounded-xl bg-red-950/60 border border-red-500/30 flex items-center space-x-2 text-red-300 text-xs">
-                            <svg class="w-4 h-4 flex-shrink-0 text-red-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                                </path>
-                            </svg>
-                            <span class="font-semibold text-[11px]">Peringatan Darurat: Disarankan evakuasi dini dan
-                                inspeksi rekahan segera!</span>
-                        </div>
-                    </div>
-
-                    <!-- 4 Geotechnical Metric Cards Grid -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-slate-300">Indikator Geoteknik Detail</span>
-                            <span class="text-[10px] text-slate-500 font-mono">4 PARAMETER UTAMA</span>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2.5">
-                            <!-- 1. Kemiringan -->
-                            <div class="glass-card rounded-xl p-3 border border-slate-800">
-                                <div
-                                    class="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
-                                    <span>Kemiringan Lereng</span>
-                                    <span>📐</span>
-                                </div>
-                                <p id="resSlope" class="text-xs font-bold text-slate-100 mb-2 truncate">-</p>
-                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                    <div id="meterSlope" class="h-full bg-red-500 w-[85%] rounded-full"></div>
-                                </div>
-                            </div>
-
-                            <!-- 2. Karakteristik Tanah -->
-                            <div class="glass-card rounded-xl p-3 border border-slate-800">
-                                <div
-                                    class="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
-                                    <span>Karakteristik Tanah</span>
-                                    <span>🪨</span>
-                                </div>
-                                <p id="resSoil" class="text-xs font-bold text-slate-100 mb-2 truncate">-</p>
-                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                    <div id="meterSoil" class="h-full bg-amber-500 w-[70%] rounded-full"></div>
-                                </div>
-                            </div>
-
-                            <!-- 3. Tutupan Vegetasi -->
-                            <div class="glass-card rounded-xl p-3 border border-slate-800">
-                                <div
-                                    class="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
-                                    <span>Tutupan Vegetasi</span>
-                                    <span>🌿</span>
-                                </div>
-                                <p id="resVeg" class="text-xs font-bold text-slate-100 mb-2 truncate">-</p>
-                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                    <div id="meterVeg" class="h-full bg-orange-500 w-[35%] rounded-full"></div>
-                                </div>
-                            </div>
-
-                            <!-- 4. Kondisi Drainase -->
-                            <div class="glass-card rounded-xl p-3 border border-slate-800">
-                                <div
-                                    class="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
-                                    <span>Kondisi Drainase</span>
-                                    <span>💧</span>
-                                </div>
-                                <p id="resDrain" class="text-xs font-bold text-slate-100 mb-2 truncate">-</p>
-                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                    <div id="meterDrain" class="h-full bg-blue-500 w-[80%] rounded-full"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recommended Immediate Action Steps -->
-                    <div class="glass-card rounded-2xl p-4 border border-slate-800">
-                        <h4 class="text-xs font-bold text-slate-200 mb-2.5 flex items-center space-x-1.5">
-                            <span class="text-blue-400">⚡</span>
-                            <span>Rekomendasi Tindakan Cepat (SOP Siaga):</span>
-                        </h4>
-                        <ul class="text-xs text-slate-300 space-y-2">
-                            <li class="flex items-start space-x-2">
-                                <span class="text-emerald-400 font-bold">✓</span>
-                                <span>Segera pantau kemunculan retakan tanah atau rembesan air keruh di bagian kaki
-                                    lereng.</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <span class="text-emerald-400 font-bold">✓</span>
-                                <span>Bila hujan deras turun terus menerus > 2 jam, evakuasi mandiri ke titik kumpul
-                                    aman.</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <span class="text-emerald-400 font-bold">✓</span>
-                                <span>Laporkan koordinat lereng ini ke petugas posko BPBD untuk inspeksi geolistrik
-                                    tanah.</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Action Buttons: Share, Print/Save, SOS, Reset -->
-                    <div class="grid grid-cols-2 gap-2.5 pt-1">
-                        <button id="btnShareReport"
-                            class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center space-x-1.5 active:scale-98 transition-all">
-                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
-                                </path>
-                            </svg>
-                            <span>Bagikan Hasil</span>
-                        </button>
-
-                        <button id="btnDownloadReport"
-                            class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center space-x-1.5 active:scale-98 transition-all">
-                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                            <span>Simpan Ringkasan</span>
-                        </button>
-                    </div>
-
-                    <!-- Reset Button -->
-                    <button id="resetBtn"
-                        class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md active:scale-98 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                            </path>
-                        </svg>
-                        <span>Pindai Gambar Lereng Lain</span>
-                    </button>
-                </div>
-
-            </section>
-
-            <!-- ============================================== -->
-            <!-- TAB 2: PETA KERAWANAN INTERAKTIF               -->
-            <!-- ============================================== -->
-            <section id="tabMap" class="hidden space-y-4">
-                <div class="glass-card rounded-2xl p-4 shadow-glass">
-                    <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <h3 class="text-sm font-bold text-white flex items-center space-x-1.5">
-                                <span>🗺️ Radar Zona Rawan Longsor</span>
-                            </h3>
-                            <p class="text-[11px] text-slate-400">Pemetaan sensor telemetri pergeseran lereng</p>
-                        </div>
-                        <span
-                            class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-mono font-bold">LIVE
-                            RADAR</span>
-                    </div>
-
-                    <!-- Map Filter Chips -->
-                    <div class="flex space-x-1.5 overflow-x-auto pb-2 scrollbar-none text-[11px]">
-                        <button
-                            class="map-filter-btn px-2.5 py-1 rounded-full bg-blue-600 text-white font-medium whitespace-nowrap"
-                            data-filter="all">Semua Titik</button>
-                        <button
-                            class="map-filter-btn px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 hover:text-white font-medium whitespace-nowrap"
-                            data-filter="danger">🔴 Bahaya (2)</button>
-                        <button
-                            class="map-filter-btn px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 hover:text-white font-medium whitespace-nowrap"
-                            data-filter="warning">🟡 Waspada (2)</button>
-                        <button
-                            class="map-filter-btn px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 hover:text-white font-medium whitespace-nowrap"
-                            data-filter="safe">🟢 Posko Aman (1)</button>
-                    </div>
-
-                    <!-- Interactive Simulated Map Canvas / Vector Graphic -->
-                    <div
-                        class="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-950 border border-slate-800 mt-2 select-none">
-                        <!-- Topographic Contour SVG Simulation -->
-                        <svg class="w-full h-full opacity-40" viewBox="0 0 400 300" preserveAspectRatio="none">
-                            <path d="M0,150 Q100,80 200,120 T400,90" fill="none" stroke="#334155" stroke-width="1.5"
-                                stroke-dasharray="4,4" />
-                            <path d="M0,180 Q120,130 220,160 T400,130" fill="none" stroke="#334155"
-                                stroke-width="1.5" />
-                            <path d="M0,210 Q90,170 230,200 T400,180" fill="none" stroke="#334155" stroke-width="1.5" />
-                            <path d="M0,250 Q150,220 280,240 T400,220" fill="none" stroke="#1e293b" stroke-width="2" />
-                            <!-- Hill shade gradient polygon -->
-                            <polygon points="50,280 150,110 260,140 380,280" fill="rgba(37, 99, 235, 0.05)" />
-                            <polygon points="120,280 200,80 290,150 350,280" fill="rgba(239, 68, 68, 0.07)" />
-                        </svg>
-
-                        <!-- Simulated Road Lines -->
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300">
-                            <path d="M20,290 C80,250 120,180 240,140 C320,110 370,40 390,20" fill="none"
-                                stroke="#64748b" stroke-width="4" stroke-linecap="round" />
-                            <path d="M20,290 C80,250 120,180 240,140 C320,110 370,40 390,20" fill="none"
-                                stroke="#f1f5f9" stroke-width="1" stroke-dasharray="6,6" />
-                        </svg>
-
-                        <!-- Interactive Pin 1: Kritis (Cadas Pangeran) -->
-                        <div class="map-pin absolute top-[28%] left-[55%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                            data-type="danger" data-title="Tebing KM-48 Cadas Pangeran"
-                            data-status="Bahaya Kritis (Siaga 1)"
-                            data-desc="Pergeseran tanah 4.8 mm/jam terdeteksi sensor. Rekahan melintang di tepi jalan raya. Segera hindari jalur ini!"
-                            data-color="text-red-400">
-                            <div class="relative flex items-center justify-center">
-                                <span class="absolute w-8 h-8 rounded-full bg-red-500/40 animate-ping"></span>
-                                <div
-                                    class="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold shadow-lg shadow-red-600/60 ring-2 ring-white/30">
-                                    !</div>
-                            </div>
-                        </div>
-
-                        <!-- Interactive Pin 2: Kritis (Lereng Pemukiman Cibanteng) -->
-                        <div class="map-pin absolute top-[62%] left-[28%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                            data-type="danger" data-title="Lereng Pemukiman Cibanteng"
-                            data-status="Bahaya Kritis (Siaga 1)"
-                            data-desc="Kejenuhan air tanah mencapai 94%. Lereng pemukiman dengan kemiringan 52°. 18 KK telah disarankan mengungsi."
-                            data-color="text-red-400">
-                            <div class="relative flex items-center justify-center">
-                                <span class="absolute w-7 h-7 rounded-full bg-red-500/30 animate-ping"></span>
-                                <div
-                                    class="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] font-bold shadow-md shadow-red-600/50">
-                                    !</div>
-                            </div>
-                        </div>
-
-                        <!-- Interactive Pin 3: Waspada (Jalur Puncak KM-12) -->
-                        <div class="map-pin absolute top-[42%] left-[34%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                            data-type="warning" data-title="Jalur Puncak KM-12" data-status="Waspada (Siaga 2)"
-                            data-desc="Erosi tebing minor terdeteksi. Saluran drainase air meluap ke aspal jalan. Pengendara harap berhati-hati."
-                            data-color="text-amber-400">
-                            <div
-                                class="w-5 h-5 rounded-full bg-amber-500 text-black flex items-center justify-center text-[9px] font-bold shadow-md shadow-amber-500/50 ring-1 ring-white/30">
-                                ▲</div>
-                        </div>
-
-                        <!-- Interactive Pin 4: Waspada (Perkebunan Lereng Utara) -->
-                        <div class="map-pin absolute top-[20%] left-[80%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                            data-type="warning" data-title="Perkebunan Lereng Utara" data-status="Waspada (Siaga 2)"
-                            data-desc="Tutupan pohon berkurang akibat penebangan. Sensor kelembaban tanah 78%."
-                            data-color="text-amber-400">
-                            <div
-                                class="w-5 h-5 rounded-full bg-amber-500 text-black flex items-center justify-center text-[9px] font-bold shadow-md shadow-amber-500/50">
-                                ▲</div>
-                        </div>
-
-                        <!-- Interactive Pin 5: Posko Aman -->
-                        <div class="map-pin absolute top-[75%] left-[75%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                            data-type="safe" data-title="Posko Utama Pengungsian BPBD"
-                            data-status="Zona Aman Terverifikasi"
-                            data-desc="Fasilitas kesehatan, logistik dapur umum, dan tenda darurat berkapasitas 500 pengungsi."
-                            data-color="text-emerald-400">
-                            <div
-                                class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-lg shadow-emerald-500/50 ring-2 ring-white/30">
-                                ⌂</div>
-                        </div>
-
-                        <!-- Map Coordinates Watermark -->
-                        <div class="absolute bottom-1 right-2 text-[9px] font-mono text-slate-500">
-                            MAP DATA: SRTM 30M // SENSOR MESH v2.1
-                        </div>
-                    </div>
-
-                    <!-- Tapped Pin Detail Card -->
-                    <div id="mapPinDetailCard"
-                        class="mt-3 p-3.5 rounded-xl bg-slate-900 border border-slate-700/80 transition-all">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 id="pinDetailTitle" class="text-xs font-bold text-white">Tebing KM-48 Cadas Pangeran
-                            </h4>
-                            <span id="pinDetailStatus"
-                                class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">Bahaya
-                                Kritis</span>
-                        </div>
-                        <p id="pinDetailDesc" class="text-[11px] text-slate-300 leading-relaxed">
-                            Pergeseran tanah 4.8 mm/jam terdeteksi sensor. Rekahan melintang di tepi jalan raya. Segera
-                            hindari jalur ini!
-                        </p>
-                        <div
-                            class="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                            <span class="text-slate-400">Koordinat: -6.842, 107.912</span>
-                            <a href="tel:117"
-                                class="text-red-400 font-bold hover:underline flex items-center space-x-1">
-                                <span>Hubungi Petugas Jalur</span>
-                                <span>&rarr;</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ============================================== -->
-            <!-- TAB 3: RIWAYAT ANALISIS (SCAN HISTORY)         -->
-            <!-- ============================================== -->
-            <section id="tabHistory" class="hidden space-y-4">
-                <div class="glass-card rounded-2xl p-4 shadow-glass">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 class="text-sm font-bold text-white flex items-center space-x-1.5">
-                                <span>📋 Riwayat Analisis Citra</span>
-                            </h3>
-                            <p class="text-[11px] text-slate-400">Hasil diagnosis pemindaian sebelumnya tersimpan di
-                                perangkat</p>
-                        </div>
-                        <button id="clearHistoryBtn"
-                            class="text-[11px] text-red-400 hover:text-red-300 font-medium px-2 py-1 rounded bg-red-950/40 border border-red-900/50">
-                            Hapus Semua
-                        </button>
-                    </div>
-
-                    <!-- History List Container -->
-                    <div id="historyListContainer" class="space-y-2.5">
-                        <!-- Dynamic items will be populated by JS -->
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="historyEmptyState" class="hidden py-10 text-center flex-col items-center justify-center">
-                        <div
-                            class="w-12 h-12 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center mb-2 mx-auto">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <p class="text-xs text-slate-400 font-medium">Belum ada riwayat pemindaian</p>
-                        <p class="text-[11px] text-slate-500 mt-0.5">Lakukan pemindaian foto lereng pada tab Deteksi
-                            untuk menyimpan hasil.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ============================================== -->
-            <!-- TAB 4: PANDUAN MITIGASI & KONTAK SOS          -->
-            <!-- ============================================== -->
-            <section id="tabGuide" class="hidden space-y-4">
-
-                <!-- 4 Early Signs of Landslides -->
-                <div class="glass-card rounded-2xl p-4 shadow-glass">
-                    <h3 class="text-sm font-bold text-white mb-1 flex items-center space-x-1.5">
-                        <span>⚠️ 4 Tanda-Tanda Awal Tanah Longsor</span>
-                    </h3>
-                    <p class="text-[11px] text-slate-400 mb-3">Kenali gejala alam sebelum terjadi luncuran tanah</p>
-
-                    <div class="space-y-2">
-                        <div
-                            class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-2.5">
-                            <span class="text-lg">⚡</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-200">1. Retakan Memanjang pada Tanah / Bangunan
-                                </h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">Muncul retakan di lereng, jalan aspal,
-                                    lantai, atau dinding rumah yang kian melebar setiap jam.</p>
-                            </div>
-                        </div>
-
-                        <div
-                            class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-2.5">
-                            <span class="text-lg">💧</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-200">2. Air Sumur / Saluran Mendadak Keruh</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">Mata air atau sumur mendadak berlumpur
-                                    cokelat, atau muncul rembesan air baru secara tiba-tiba di kaki lereng.</p>
-                            </div>
-                        </div>
-
-                        <div
-                            class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-2.5">
-                            <span class="text-lg">🌲</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-200">3. Pohon, Tiang Listrik, atau Pagar Miring
-                                </h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">Struktur vertikal tampak condong ke arah
-                                    lembah karena lapisan bawah tanah mulai bergeser pelan (creeping).</p>
-                            </div>
-                        </div>
-
-                        <div
-                            class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-2.5">
-                            <span class="text-lg">🔊</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-200">4. Suara Gemuruh dari Arah Bukit</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">Terdengar suara gemertak patahan ranting,
-                                    runtuhan kerikil, atau gemuruh bergetar sebelum longsoran besar.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 72-Hour Disaster Kit Checklist (Tas Siaga Bencana) -->
-                <div class="glass-card rounded-2xl p-4 shadow-glass">
-                    <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <h3 class="text-sm font-bold text-white flex items-center space-x-1.5">
-                                <span>🎒 Tas Siaga Bencana (72 Jam)</span>
-                            </h3>
-                            <p class="text-[11px] text-slate-400">Checklist perlengkapan evakuasi darurat mandiri</p>
-                        </div>
-                        <span id="kitProgressBadge" class="text-xs font-mono font-bold text-emerald-400">0/6 Siap</span>
-                    </div>
-
-                    <div class="space-y-2 text-xs text-slate-300 mt-3" id="disasterKitList">
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Dokumen Penting (KTP, KK, Ijazah, Polis Asuransi dalam map plastik anti air)</span>
-                        </label>
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Air Minum Min. 3 Liter / Orang & Makanan Siap Saji (Tahan Lama)</span>
-                        </label>
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Kotak P3K, Obat Pribadi, Masker & Antiseptik</span>
-                        </label>
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Senter LED Kepala, Baterai Cadangan & Peluit Darurat (Sinyal Suara)</span>
-                        </label>
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Powerbank Terisi Penuh & Kabel Pengisi Daya Ponsel</span>
-                        </label>
-                        <label
-                            class="flex items-center space-x-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                            <input type="checkbox"
-                                class="kit-checkbox rounded text-blue-600 focus:ring-0 bg-slate-800 border-slate-700 w-4 h-4">
-                            <span>Pakaian Hangat, Selimut Termal & Jas Hujan Ponco</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Emergency Contact Speed Dial Hotline -->
-                <div class="glass-card rounded-2xl p-4 shadow-glass">
-                    <h3 class="text-sm font-bold text-white mb-2 flex items-center space-x-1.5">
-                        <span>📞 Kontak Darurat Siaga (1-Tap Call)</span>
-                    </h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="tel:117"
-                            class="p-2.5 rounded-xl bg-red-950/60 hover:bg-red-900/50 border border-red-500/40 text-red-200 flex items-center justify-between transition-colors">
-                            <div>
-                                <p class="text-[10px] text-red-400 font-bold uppercase">BNPB / BPBD</p>
-                                <p class="text-sm font-bold font-mono text-white">117 / 112</p>
-                            </div>
-                            <span class="text-base">🚨</span>
-                        </a>
-
-                        <a href="tel:115"
-                            class="p-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/50 border border-blue-500/40 text-blue-200 flex items-center justify-between transition-colors">
-                            <div>
-                                <p class="text-[10px] text-blue-400 font-bold uppercase">BASARNAS SAR</p>
-                                <p class="text-sm font-bold font-mono text-white">115</p>
-                            </div>
-                            <span class="text-base">🚁</span>
-                        </a>
-
-                        <a href="tel:110"
-                            class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-between transition-colors">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase">POLISI</p>
-                                <p class="text-sm font-bold font-mono text-white">110</p>
-                            </div>
-                            <span class="text-base">🚓</span>
-                        </a>
-
-                        <a href="tel:119"
-                            class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-between transition-colors">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase">AMBULANS / PMI</p>
-                                <p class="text-sm font-bold font-mono text-white">118 / 119</p>
-                            </div>
-                            <span class="text-base">🚑</span>
-                        </a>
-                    </div>
-                </div>
-
-            </section>
-
-        </main>
-
-        <!-- ============================================== -->
-        <!-- BOTTOM NAVIGATION BAR (APP EXPERIENCE)        -->
-        <!-- ============================================== -->
-        <nav aria-label="Navigasi Utama Aplikasi"
-            class="glass-nav absolute bottom-0 left-0 right-0 z-40 px-2 py-2 flex items-center justify-around select-none">
-            <!-- Nav 1: Deteksi -->
-            <button
-                class="nav-tab-btn flex flex-col items-center justify-center py-1 px-3 rounded-xl text-blue-400 transition-all"
-                data-tab="tabDetect">
-                <div class="relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <span
-                        class="active-indicator absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                </div>
-                <span class="text-[10px] font-semibold mt-1">Deteksi</span>
-            </button>
-
-            <!-- Nav 2: Peta -->
-            <button
-                class="nav-tab-btn flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all"
-                data-tab="tabMap">
-                <div class="relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7">
-                        </path>
-                    </svg>
-                    <span
-                        class="active-indicator hidden absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                </div>
-                <span class="text-[10px] font-semibold mt-1">Peta Rawan</span>
-            </button>
-
-            <!-- Nav 3: Riwayat -->
-            <button
-                class="nav-tab-btn flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all"
-                data-tab="tabHistory">
-                <div class="relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span id="historyBadgeCount"
-                        class="hidden absolute -top-1 -right-2 px-1 py-0.2 bg-blue-600 text-white text-[8px] font-bold rounded-full">0</span>
-                    <span
-                        class="active-indicator hidden absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                </div>
-                <span class="text-[10px] font-semibold mt-1">Riwayat</span>
-            </button>
-
-            <!-- Nav 4: Panduan & SOS -->
-            <button
-                class="nav-tab-btn flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all"
-                data-tab="tabGuide">
-                <div class="relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                        </path>
-                    </svg>
-                    <span
-                        class="active-indicator hidden absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                </div>
-                <span class="text-[10px] font-semibold mt-1">Panduan</span>
-            </button>
-        </nav>
-
-        <!-- SOS Emergency Bottom Sheet Modal -->
-        <div id="sosModal"
-            class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center transition-opacity">
-            <div class="w-full max-w-md bg-dark-card border-t border-slate-700 rounded-t-3xl p-5 space-y-4">
-                <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto"></div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                        <h3 class="text-base font-bold text-white">Layanan Tanggap Bencana Darurat</h3>
-                    </div>
-                    <button id="closeSosModalBtn" class="text-slate-400 hover:text-white p-1">✕</button>
-                </div>
-                <p class="text-xs text-slate-300">
-                    Gunakan saluran ini jika Anda melihat pergerakan tanah besar, retakan lereng yang tiba-tiba meluas,
-                    atau terdapat korban terjebak.
-                </p>
-                <div class="space-y-2">
-                    <a href="tel:117"
-                        class="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center justify-between shadow-lg shadow-red-600/40">
-                        <span>Panggilan Darurat BPBD / BNPB</span>
-                        <span class="font-mono text-base">117</span>
-                    </a>
-                    <a href="tel:115"
-                        class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm flex items-center justify-between border border-slate-700">
-                        <span>Penyelamatan SAR (BASARNAS)</span>
-                        <span class="font-mono text-base">115</span>
-                    </a>
-                    <a href="tel:112"
-                        class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm flex items-center justify-between border border-slate-700">
-                        <span>Layanan Darurat Terpadu Pemda</span>
-                        <span class="font-mono text-base">112</span>
-                    </a>
                 </div>
             </div>
+            
+            <button id="resetBtn" class="mt-8 text-blue-600 hover:text-blue-800 text-sm font-semibold underline">
+                &larr; Analisis Gambar Lain
+            </button>
         </div>
 
-        <!-- Floating Toast Notification -->
-        <div id="toastNotification"
-            class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900/95 text-white text-xs font-semibold shadow-2xl border border-slate-700 flex items-center space-x-2 transition-all">
-            <span id="toastIcon">ℹ️</span>
-            <span id="toastMessage">Pesan</span>
-        </div>
+    </main>
 
-    </div>
+    <footer class="text-center pb-6 text-gray-400 text-sm">
+        <p>&copy; 2026 GeoAnalyzer - Simulasi Analisis Lingkungan</p>
+    </footer>
 
-    <!-- Script Flow & Audio Synthesizer Logic -->
+    <!-- Script Flow Logic -->
     <script>
         // DOM Elements
         const imageInput = document.getElementById('imageInput');
-        const cameraInput = document.getElementById('cameraInput');
         const fileName = document.getElementById('fileName');
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
@@ -1230,8 +134,6 @@
         const loadingState = document.getElementById('loadingState');
         const resultSection = document.getElementById('resultSection');
         const resetBtn = document.getElementById('resetBtn');
-        const scannerLaser = document.getElementById('scannerLaser');
-        const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
 
         // Results Elements
         const resSlope = document.getElementById('resSlope');
@@ -1241,747 +143,85 @@
         const resPercentage = document.getElementById('resPercentage');
         const resConclusion = document.getElementById('resConclusion');
 
-        // Additional UI Elements
-        const gaugeProgressCircle = document.getElementById('gaugeProgressCircle');
-        const hazardCard = document.getElementById('hazardCard');
-        const hazardTitle = document.getElementById('hazardTitle');
-        const riskBadge = document.getElementById('riskBadge');
-        const riskStatusBar = document.getElementById('riskStatusBar');
-        const scanPercentCounter = document.getElementById('scanPercentCounter');
-        const scanTelemetryText = document.getElementById('scanTelemetryText');
-        const scanProgressBar = document.getElementById('scanProgressBar');
-
-        // Telemetry Meters
-        const meterSlope = document.getElementById('meterSlope');
-        const meterSoil = document.getElementById('meterSoil');
-        const meterVeg = document.getElementById('meterVeg');
-        const meterDrain = document.getElementById('meterDrain');
-
-        // Status bar clock
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const clockEl = document.getElementById('statusBarClock');
-            if (clockEl) clockEl.textContent = `${hours}:${minutes}`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // ----------------------------------------------------
-        // Web Audio API Synthesizer (Zero External Assets)
-        // ----------------------------------------------------
-        let audioCtx = null;
-        let isSoundEnabled = false;
-
-        function getAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            return audioCtx;
-        }
-
-        function playSound(type) {
-            if (!isSoundEnabled) return;
-            try {
-                const ctx = getAudioContext();
-                if (ctx.state === 'suspended') {
-                    ctx.resume();
-                }
-
-                if (type === 'click') {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04);
-                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.04);
-                } else if (type === 'scan') {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(300, ctx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.25);
-                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.25);
-                } else if (type === 'success') {
-                    const freqs = [523.25, 659.25, 783.99, 1046.50];
-                    freqs.forEach((f, i) => {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(f, ctx.currentTime + (i * 0.07));
-                        gain.gain.setValueAtTime(0.1, ctx.currentTime + (i * 0.07));
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (i * 0.07) + 0.3);
-                        osc.connect(gain);
-                        gain.connect(ctx.destination);
-                        osc.start(ctx.currentTime + (i * 0.07));
-                        osc.stop(ctx.currentTime + (i * 0.07) + 0.3);
-                    });
-                } else if (type === 'warning') {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(440, ctx.currentTime);
-                    osc.frequency.setValueAtTime(330, ctx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.35);
-                }
-            } catch (err) {
-                console.warn('Audio play error', err);
-            }
-        }
-
-        // Sound Toggle
-        const soundToggleBtn = document.getElementById('soundToggleBtn');
-        const soundIconOn = document.getElementById('soundIconOn');
-        const soundIconOff = document.getElementById('soundIconOff');
-
-        soundToggleBtn.addEventListener('click', () => {
-            isSoundEnabled = !isSoundEnabled;
-            if (isSoundEnabled) {
-                soundIconOn.classList.remove('hidden');
-                soundIconOff.classList.add('hidden');
-                playSound('success');
-                showToast('🔊 Suara Efek AI Diaktifkan');
-            } else {
-                soundIconOn.classList.add('hidden');
-                soundIconOff.classList.remove('hidden');
-                showToast('🔇 Suara Efek Dinonaktifkan');
-            }
-        });
-
-        // Trigger Mobile Haptic feedback if available
-        function triggerHaptic(duration = 20) {
-            if (navigator.vibrate) {
-                try {
-                    navigator.vibrate(duration);
-                } catch (e) { }
-            }
-        }
-
-        // Toast Notification System
-        function showToast(message, icon = 'ℹ️') {
-            const toast = document.getElementById('toastNotification');
-            const msgEl = document.getElementById('toastMessage');
-            const iconEl = document.getElementById('toastIcon');
-            if (!toast) return;
-            msgEl.textContent = message;
-            iconEl.textContent = icon;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 2500);
-        }
-
-        // ----------------------------------------------------
-        // Camera & Gallery Upload Handlers
-        // ----------------------------------------------------
-        const btnTriggerCamera = document.getElementById('btnTriggerCamera');
-        const btnTriggerGallery = document.getElementById('btnTriggerGallery');
-
-        btnTriggerCamera.addEventListener('click', () => {
-            playSound('click');
-            triggerHaptic();
-            cameraInput.click();
-        });
-
-        btnTriggerGallery.addEventListener('click', () => {
-            playSound('click');
-            triggerHaptic();
-            imageInput.click();
-        });
-
-        function handleFileSelection(file) {
+        // 1. Flow Upload Gambar
+        imageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
             if (file) {
                 fileName.textContent = file.name;
+                
+                // Read image for preview
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = function(e) {
                     imagePreview.src = e.target.result;
                     previewContainer.classList.remove('hidden');
                     resultSection.classList.add('hidden');
-                    playSound('click');
-                    triggerHaptic();
-                    previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                };
+                }
                 reader.readAsDataURL(file);
             }
-        }
-
-        imageInput.addEventListener('change', function (e) {
-            handleFileSelection(e.target.files[0]);
         });
 
-        cameraInput.addEventListener('change', function (e) {
-            handleFileSelection(e.target.files[0]);
-        });
-
-        // Cancel / Change Photo Preview
-        cancelPreviewBtn.addEventListener('click', () => {
+        // 2. Flow Analisis Gambar (Simulasi AI)
+        analyzeBtn.addEventListener('click', function() {
+            // Sembunyikan tombol & tampilkan loading
             previewContainer.classList.add('hidden');
-            imageInput.value = '';
-            cameraInput.value = '';
-            fileName.textContent = 'Format didukung: JPG, PNG, WEBP';
-            playSound('click');
-        });
-
-        // ----------------------------------------------------
-        // Preset Sample Slopes (1-Click Test)
-        // ----------------------------------------------------
-        const samplePresetBtns = document.querySelectorAll('.sample-preset-btn');
-        samplePresetBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-                const src = this.getAttribute('data-src');
-                const name = this.getAttribute('data-name');
-                fileName.textContent = name;
-                imagePreview.src = src;
-                previewContainer.classList.remove('hidden');
-                resultSection.classList.add('hidden');
-                playSound('click');
-                triggerHaptic();
-                showToast(`Sampel lereng dimuat: ${name}`, '📸');
-                previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-        });
-
-        // ----------------------------------------------------
-        // AI Image Analysis Simulation with Real-time HUD
-        // ----------------------------------------------------
-        let activeAnalysisTimer = null;
-
-        analyzeBtn.addEventListener('click', function () {
-            playSound('scan');
-            triggerHaptic(50);
-
-            // Sembunyikan preview analyze button, aktifkan scanner laser
-            scannerLaser.classList.remove('hidden');
-            analyzeBtn.classList.add('hidden');
-
-            // Tampilkan loading HUD
             loadingState.classList.remove('hidden');
             loadingState.classList.add('flex');
             resultSection.classList.add('hidden');
 
-            loadingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            const phases = [
-                { progress: 18, text: "Memindai geometri lereng & kontur 3D..." },
-                { progress: 42, text: "Menganalisis kerapatan vegetasi (NDVI Index)..." },
-                { progress: 68, text: "Menilai permeabilitas tanah & kejenuhan air..." },
-                { progress: 88, text: "Mengevaluasi drainase & stabilitas batuan..." },
-                { progress: 100, text: "Mengompilasi model probabilitas risiko geosains..." }
-            ];
-
-            let step = 0;
-            let currentPct = 0;
-
-            const interval = setInterval(() => {
-                if (step < phases.length) {
-                    currentPct = phases[step].progress;
-                    scanPercentCounter.textContent = `${currentPct}%`;
-                    scanProgressBar.style.width = `${currentPct}%`;
-                    scanTelemetryText.textContent = phases[step].text;
-                    playSound('scan');
-                    step++;
-                } else {
-                    clearInterval(interval);
-                    // Selesai analisis
-                    setTimeout(() => {
-                        scannerLaser.classList.add('hidden');
-                        loadingState.classList.add('hidden');
-                        loadingState.classList.remove('flex');
-                        resultSection.classList.remove('hidden');
-
-                        generateAnalysisResult();
-                        triggerHaptic([60, 40, 100]);
-                        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 400);
-                }
-            }, 550);
+            // Simulasi waktu proses AI (3 detik)
+            setTimeout(() => {
+                generateAnalysisResult();
+                
+                // Sembunyikan loading, tampilkan hasil
+                loadingState.classList.add('hidden');
+                loadingState.classList.remove('flex');
+                resultSection.classList.remove('hidden');
+                previewContainer.classList.remove('hidden');
+                analyzeBtn.classList.add('hidden'); // Sembunyikan tombol analisa setelah sukses
+            }, 3000);
         });
 
-        // Reset Handler
-        resetBtn.addEventListener('click', function () {
-            playSound('click');
-            triggerHaptic();
+        // 3. Flow Reset untuk gambar baru
+        resetBtn.addEventListener('click', function() {
             resultSection.classList.add('hidden');
             analyzeBtn.classList.remove('hidden');
-            previewContainer.classList.add('hidden');
-            scannerLaser.classList.add('hidden');
             imageInput.value = '';
-            cameraInput.value = '';
-            fileName.textContent = 'Format didukung: JPG, PNG, WEBP';
+            fileName.textContent = 'Format didukung: JPG, PNG';
+            previewContainer.classList.add('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // ----------------------------------------------------
-        // Generate Geological Results & Dynamic Gauge Animation
-        // ----------------------------------------------------
+        // Fungsi untuk menghasilkan data simulasi (Bisa diganti dengan fetch API sungguhan ke Backend/Model AI)
         function generateAnalysisResult() {
-            const slopes = [
-                { text: "Sangat Curam (>48°)", pct: 92 },
-                { text: "Curam (35° - 45°)", pct: 75 },
-                { text: "Miring Sedang (20° - 35°)", pct: 55 },
-                { text: "Landai (< 20°)", pct: 25 }
-            ];
+            // Mock Data Generator (Agar terlihat realistis)
+            const slopes = ["Curam (>45 derajat)", "Sangat Curam (Lereng terjal)", "Miring (25-45 derajat)"];
+            const soils = ["Tanah Liat Berpasir (Rentan jenuh air)", "Tanah Vulkanik Gembur", "Lempung Liat (Mudah retak)"];
+            const vegs = ["Sangat Kurang (Lahan Gundul)", "Kurang (Hanya semak belukar/pertanian semusim)", "Rendah (Akar tidak mengikat tanah)"];
+            const drains = ["Sangat Buruk (Aliran air tersumbat)", "Buruk (Terindikasi genangan air di permukaan)", "Kurang Baik (Air menggerus permukaan tanah)"];
 
-            const soils = [
-                { text: "Tanah Liat Berpasir (Rentan Jenuh)", pct: 88 },
-                { text: "Vulkanik Gembur & Rapuh", pct: 82 },
-                { text: "Lempung Liat (Mudah Retak)", pct: 74 },
-                { text: "Struktur Batuan Andesit Stabil", pct: 30 }
-            ];
+            // Mengambil data acak dari mock data
+            const slopeRisk = slopes[Math.floor(Math.random() * slopes.length)];
+            const soilRisk = soils[Math.floor(Math.random() * soils.length)];
+            const vegRisk = vegs[Math.floor(Math.random() * vegs.length)];
+            const drainRisk = drains[Math.floor(Math.random() * drains.length)];
+            
+            // Persentase acak untuk area berisiko (antara 75% - 98%)
+            const riskPercentage = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
 
-            const vegs = [
-                { text: "Sangat Rendah (Lahan Gundul)", pct: 20 },
-                { text: "Rendah (Hanya Semak Belukar)", pct: 38 },
-                { text: "Sedang (Perkebunan Terbuka)", pct: 60 },
-                { text: "Rapat & Kuat (Pohon Berakar Dalam)", pct: 90 }
-            ];
-
-            const drains = [
-                { text: "Sangat Buruk (Air Tergenang)", pct: 90 },
-                { text: "Buruk (Aliran Menggerus Tebing)", pct: 78 },
-                { text: "Cukup Baik (Aliran Terarah)", pct: 50 },
-                { text: "Optimal (Drainase Beronjong)", pct: 20 }
-            ];
-
-            // Pick realistic randomized simulation or tailor to preset if sample
-            const currentImg = imagePreview.src || '';
-            let riskPercentage;
-            let slopeRisk, soilRisk, vegRisk, drainRisk;
-
-            if (currentImg.includes('sample_high_risk')) {
-                riskPercentage = Math.floor(Math.random() * (96 - 88 + 1)) + 88;
-                slopeRisk = slopes[0];
-                soilRisk = soils[0];
-                vegRisk = vegs[0];
-                drainRisk = drains[0];
-            } else if (currentImg.includes('sample_low_risk')) {
-                riskPercentage = Math.floor(Math.random() * (35 - 15 + 1)) + 15;
-                slopeRisk = slopes[3];
-                soilRisk = soils[3];
-                vegRisk = vegs[3];
-                drainRisk = drains[3];
-            } else if (currentImg.includes('sample_moderate_risk')) {
-                riskPercentage = Math.floor(Math.random() * (74 - 58 + 1)) + 58;
-                slopeRisk = slopes[1];
-                soilRisk = soils[2];
-                vegRisk = vegs[1];
-                drainRisk = drains[1];
-            } else {
-                // Random realistic scan
-                riskPercentage = Math.floor(Math.random() * (95 - 65 + 1)) + 65;
-                slopeRisk = slopes[Math.floor(Math.random() * slopes.length)];
-                soilRisk = soils[Math.floor(Math.random() * soils.length)];
-                vegRisk = vegs[Math.floor(Math.random() * vegs.length)];
-                drainRisk = drains[Math.floor(Math.random() * drains.length)];
-            }
-
-            // Populate Values
-            resSlope.textContent = slopeRisk.text;
-            resSoil.textContent = soilRisk.text;
-            resVeg.textContent = vegRisk.text;
-            resDrain.textContent = drainRisk.text;
-
-            // Meters
-            meterSlope.style.width = `${slopeRisk.pct}%`;
-            meterSoil.style.width = `${soilRisk.pct}%`;
-            meterVeg.style.width = `${vegRisk.pct}%`;
-            meterDrain.style.width = `${drainRisk.pct}%`;
-
-            // Percentage
+            // Set DOM
+            resSlope.textContent = slopeRisk;
+            resSoil.textContent = soilRisk;
+            resVeg.textContent = vegRisk;
+            resDrain.textContent = drainRisk;
             resPercentage.textContent = riskPercentage + "%";
 
-            // Animated Circular Gauge (Circumference = 2 * PI * 40 = 251.2)
-            const circumference = 251.2;
-            const offset = circumference - (riskPercentage / 100) * circumference;
-            gaugeProgressCircle.style.strokeDashoffset = offset;
-
-            // Danger Classification & Colors
-            if (riskPercentage >= 80) {
-                playSound('warning');
-                gaugeProgressCircle.style.stroke = '#ef4444';
-                resPercentage.className = "text-2xl font-black font-display text-red-500 tracking-tight leading-none";
-                riskBadge.textContent = "BAHAYA KRITIS";
-                riskBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-red-600 text-white shadow-sm shadow-red-600/50";
-                hazardCard.className = "glass-card rounded-2xl p-5 border-l-4 border-red-500 relative overflow-hidden shadow-neon-danger transition-all";
-                hazardTitle.innerHTML = `<span class="text-red-400">🚨 Potensi Longsor Kritis (Siaga 1)</span>`;
-                riskStatusBar.className = "mt-3 p-2.5 rounded-xl bg-red-950/60 border border-red-500/30 flex items-center space-x-2 text-red-300 text-xs";
-                riskStatusBar.innerHTML = `<svg class="w-4 h-4 flex-shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span class="font-semibold text-[11px]">Peringatan Darurat: Segera kosongkan radius bahaya di bawah lereng!</span>`;
-
-                resConclusion.innerHTML = `Berdasarkan analisis visual AI, lokasi lereng ini memiliki <b>kemungkinan longsor sebesar ${riskPercentage}%</b>. Kombinasi faktor <b>${slopeRisk.text}</b> dan <b>${drainRisk.text}</b> menyebabkan hilangnya kohesi lapisan batuan. <b>Sangat direkomendasikan</b> untuk segera menurunkan tim reaksi cepat guna mitigasi fisik dan menghindari aktivitas warga dalam radius rawan.`;
-            } else if (riskPercentage >= 50) {
-                playSound('success');
-                gaugeProgressCircle.style.stroke = '#f59e0b';
-                resPercentage.className = "text-2xl font-black font-display text-amber-500 tracking-tight leading-none";
-                riskBadge.textContent = "WASPADA SEDANG";
-                riskBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-amber-600 text-white shadow-sm shadow-amber-600/50";
-                hazardCard.className = "glass-card rounded-2xl p-5 border-l-4 border-amber-500 relative overflow-hidden shadow-neon-warning transition-all";
-                hazardTitle.innerHTML = `<span class="text-amber-400">⚠️ Potensi Longsor Sedang (Waspada)</span>`;
-                riskStatusBar.className = "mt-3 p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center space-x-2 text-amber-300 text-xs";
-                riskStatusBar.innerHTML = `<svg class="w-4 h-4 flex-shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="font-semibold text-[11px]">Perhatian: Tingkatkan kewaspadaan jika intensitas hujan meningkat!</span>`;
-
-                resConclusion.innerHTML = `Kawasan ini mengindikasikan <b>potensi longsor sebesar ${riskPercentage}%</b>. Indikator <b>${vegRisk.text}</b> dan <b>${soilRisk.text}</b> mengindikasikan kerentanan erosi permukaan. Diperlukan penanaman vegetasi pengikat tanah (akar wangi/vetiver) serta pembuatan parit drainase horizontal.`;
+            // Logika Kesimpulan Berdasarkan Persentase
+            if(riskPercentage > 85) {
+                resConclusion.innerHTML = `Berdasarkan analisis visual, lokasi ini memiliki <b>kemungkinan longsor sebesar ${riskPercentage}%</b>. Kombinasi antara <b>${slopeRisk}</b> dan <b>${drainRisk}</b> menyebabkan tanah menjadi sangat tidak stabil saat hujan turun. <b>Sangat direkomendasikan</b> untuk segera menurunkan tim ahli lapangan guna melakukan inspeksi struktur tanah mendalam dan merelokasi sementara aktivitas di sekitar area tersebut.`;
             } else {
-                playSound('success');
-                gaugeProgressCircle.style.stroke = '#10b981';
-                resPercentage.className = "text-2xl font-black font-display text-emerald-500 tracking-tight leading-none";
-                riskBadge.textContent = "TERKENDALI / AMAN";
-                riskBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-emerald-600 text-white shadow-sm shadow-emerald-600/50";
-                hazardCard.className = "glass-card rounded-2xl p-5 border-l-4 border-emerald-500 relative overflow-hidden shadow-neon-safe transition-all";
-                hazardTitle.innerHTML = `<span class="text-emerald-400">✅ Kondisi Lereng Stabil & Aman</span>`;
-                riskStatusBar.className = "mt-3 p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center space-x-2 text-emerald-300 text-xs";
-                riskStatusBar.innerHTML = `<svg class="w-4 h-4 flex-shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="font-semibold text-[11px]">Kondisi Terpantau Stabil: Daya dukung lereng memadai dan kanopi rapat.</span>`;
-
-                resConclusion.innerHTML = `Area lereng ini terpantau berada pada <b>indeks risiko rendah (${riskPercentage}%)</b>. Tutupan <b>${vegRisk.text}</b> dan <b>${soilRisk.text}</b> bekerja efektif menahan air hujan. Tetap jaga kelestarian pohon dan cegah pemotongan lereng tanpa perkuatan dinding tebing.`;
-            }
-
-            // Save to LocalStorage History
-            saveScanToHistory({
-                percentage: riskPercentage,
-                riskLabel: riskBadge.textContent,
-                slope: slopeRisk.text,
-                date: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
-                imgThumb: imagePreview.src
-            });
-        }
-
-        // ----------------------------------------------------
-        // History Management (LocalStorage)
-        // ----------------------------------------------------
-        const STORAGE_KEY = 'geoshield_scan_history_v1';
-
-        function getStoredHistory() {
-            try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            } catch (e) {
-                return [];
+                resConclusion.innerHTML = `Kawasan ini mengindikasikan <b>potensi longsor sebesar ${riskPercentage}%</b>. Faktor <b>${vegRisk}</b> dan <b>${soilRisk}</b> menjadi indikator utama kerawanan. Area ini memerlukan observasi fisik lebih lanjut (ground check) untuk memastikan stabilitas lereng serta perbaikan sistem drainase secepatnya untuk mencegah akumulasi air.`;
             }
         }
-
-        function saveScanToHistory(scanItem) {
-            let history = getStoredHistory();
-            // keep up to 15 items
-            history.unshift(scanItem);
-            if (history.length > 15) history.pop();
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-                renderHistoryList();
-            } catch (e) {
-                console.warn('Storage limit', e);
-            }
-        }
-
-        function renderHistoryList() {
-            const container = document.getElementById('historyListContainer');
-            const emptyState = document.getElementById('historyEmptyState');
-            const badgeCount = document.getElementById('historyBadgeCount');
-            const history = getStoredHistory();
-
-            if (!container) return;
-
-            if (history.length === 0) {
-                container.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-                badgeCount.classList.add('hidden');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            emptyState.classList.remove('flex');
-            badgeCount.classList.remove('hidden');
-            badgeCount.textContent = history.length;
-
-            container.innerHTML = history.map((item, index) => {
-                const isHigh = item.percentage >= 80;
-                const isMed = item.percentage >= 50 && item.percentage < 80;
-                const badgeColor = isHigh ? 'bg-red-500/20 text-red-400 border-red-500/30' : (isMed ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30');
-
-                return `
-                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between space-x-3 hover:bg-slate-800/60 transition-colors">
-                    <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                        <img src="${item.imgThumb}" alt="Thumb" class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-bold text-white truncate font-display">${item.riskLabel}</span>
-                            <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border ${badgeColor}">${item.percentage}%</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400 truncate mt-0.5">${item.slope}</p>
-                        <span class="text-[9px] text-slate-500 font-mono">${item.date}</span>
-                    </div>
-                    <button class="delete-history-item text-slate-500 hover:text-red-400 p-1.5" data-index="${index}" title="Hapus">
-                        ✕
-                    </button>
-                </div>
-                `;
-            }).join('');
-
-            // Delete single item listeners
-            document.querySelectorAll('.delete-history-item').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idx = parseInt(btn.getAttribute('data-index'));
-                    let hist = getStoredHistory();
-                    hist.splice(idx, 1);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
-                    playSound('click');
-                    renderHistoryList();
-                });
-            });
-        }
-
-        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-            if (confirm('Hapus seluruh riwayat diagnosis?')) {
-                localStorage.removeItem(STORAGE_KEY);
-                playSound('click');
-                renderHistoryList();
-                showToast('Seluruh riwayat dihapus');
-            }
-        });
-
-        // ----------------------------------------------------
-        // Disaster Kit Checkbox Persistence
-        // ----------------------------------------------------
-        const KIT_STORAGE_KEY = 'geoshield_disaster_kit_v1';
-        const kitCheckboxes = document.querySelectorAll('.kit-checkbox');
-        const kitProgressBadge = document.getElementById('kitProgressBadge');
-
-        function updateKitProgress() {
-            const total = kitCheckboxes.length;
-            let checked = 0;
-            const states = [];
-
-            kitCheckboxes.forEach((cb) => {
-                if (cb.checked) checked++;
-                states.push(cb.checked);
-            });
-
-            kitProgressBadge.textContent = `${checked}/${total} Siap`;
-            if (checked === total) {
-                kitProgressBadge.className = 'text-xs font-mono font-bold text-emerald-400 animate-pulse';
-            } else {
-                kitProgressBadge.className = 'text-xs font-mono font-bold text-blue-400';
-            }
-
-            localStorage.setItem(KIT_STORAGE_KEY, JSON.stringify(states));
-        }
-
-        // Load saved checklist state
-        try {
-            const savedStates = JSON.parse(localStorage.getItem(KIT_STORAGE_KEY)) || [];
-            kitCheckboxes.forEach((cb, idx) => {
-                if (savedStates[idx] !== undefined) {
-                    cb.checked = savedStates[idx];
-                }
-                cb.addEventListener('change', () => {
-                    playSound('click');
-                    triggerHaptic(15);
-                    updateKitProgress();
-                });
-            });
-            updateKitProgress();
-        } catch (e) { }
-
-        // ----------------------------------------------------
-        // Share & Download Reports
-        // ----------------------------------------------------
-        document.getElementById('btnShareReport').addEventListener('click', async () => {
-            playSound('click');
-            triggerHaptic();
-
-            const shareData = {
-                title: 'GeoShield AI - Laporan Risiko Longsor',
-                text: `Hasil Deteksi AI: Kerawanan ${resPercentage.textContent} (${riskBadge.textContent}). Kemiringan: ${resSlope.textContent}. Evaluasi: ${resConclusion.textContent.replace(/<[^>]*>?/gm, '')}`,
-                url: window.location.href
-            };
-
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                } catch (e) { }
-            } else {
-                navigator.clipboard.writeText(shareData.text);
-                showToast('Teks laporan berhasil disalin ke clipboard!', '📋');
-            }
-        });
-
-        document.getElementById('btnDownloadReport').addEventListener('click', () => {
-            playSound('click');
-            triggerHaptic();
-            window.print();
-        });
-
-        // ----------------------------------------------------
-        // Map Radar Interactions
-        // ----------------------------------------------------
-        const mapPins = document.querySelectorAll('.map-pin');
-        const pinTitle = document.getElementById('pinDetailTitle');
-        const pinStatus = document.getElementById('pinDetailStatus');
-        const pinDesc = document.getElementById('pinDetailDesc');
-
-        mapPins.forEach(pin => {
-            pin.addEventListener('click', () => {
-                playSound('click');
-                triggerHaptic();
-                const title = pin.getAttribute('data-title');
-                const status = pin.getAttribute('data-status');
-                const desc = pin.getAttribute('data-desc');
-                const type = pin.getAttribute('data-type');
-
-                pinTitle.textContent = title;
-                pinStatus.textContent = status;
-                pinDesc.textContent = desc;
-
-                if (type === 'danger') {
-                    pinStatus.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400';
-                } else if (type === 'warning') {
-                    pinStatus.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400';
-                } else {
-                    pinStatus.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400';
-                }
-            });
-        });
-
-        // Map Filter Buttons
-        const mapFilterBtns = document.querySelectorAll('.map-filter-btn');
-        mapFilterBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-                playSound('click');
-                mapFilterBtns.forEach(b => {
-                    b.classList.remove('bg-blue-600', 'text-white');
-                    b.classList.add('bg-slate-800', 'text-slate-300');
-                });
-                this.classList.remove('bg-slate-800', 'text-slate-300');
-                this.classList.add('bg-blue-600', 'text-white');
-
-                const filter = this.getAttribute('data-filter');
-                mapPins.forEach(pin => {
-                    const pinType = pin.getAttribute('data-type');
-                    if (filter === 'all' || filter === pinType) {
-                        pin.style.display = 'block';
-                    } else {
-                        pin.style.display = 'none';
-                    }
-                });
-            });
-        });
-
-        // ----------------------------------------------------
-        // Bottom Navigation Tab Switching
-        // ----------------------------------------------------
-        const navTabBtns = document.querySelectorAll('.nav-tab-btn');
-        const tabSections = {
-            tabDetect: document.getElementById('tabDetect'),
-            tabMap: document.getElementById('tabMap'),
-            tabHistory: document.getElementById('tabHistory'),
-            tabGuide: document.getElementById('tabGuide')
-        };
-
-        navTabBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-                const targetTab = this.getAttribute('data-tab');
-                playSound('click');
-                triggerHaptic();
-
-                // Reset all nav tab states
-                navTabBtns.forEach(b => {
-                    b.classList.remove('text-blue-400');
-                    b.classList.add('text-slate-400');
-                    const indicator = b.querySelector('.active-indicator');
-                    if (indicator) indicator.classList.add('hidden');
-                });
-
-                // Set active nav tab
-                this.classList.remove('text-slate-400');
-                this.classList.add('text-blue-400');
-                const activeIndicator = this.querySelector('.active-indicator');
-                if (activeIndicator) activeIndicator.classList.remove('hidden');
-
-                // Hide all sections, show target
-                Object.keys(tabSections).forEach(key => {
-                    if (tabSections[key]) {
-                        tabSections[key].classList.add('hidden');
-                    }
-                });
-
-                if (tabSections[targetTab]) {
-                    tabSections[targetTab].classList.remove('hidden');
-                }
-
-                // If switching to history, refresh list
-                if (targetTab === 'tabHistory') {
-                    renderHistoryList();
-                }
-
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        });
-
-        // ----------------------------------------------------
-        // SOS Emergency Modal
-        // ----------------------------------------------------
-        const sosModal = document.getElementById('sosModal');
-        const openSosModalBtn = document.getElementById('openSosModalBtn');
-        const closeSosModalBtn = document.getElementById('closeSosModalBtn');
-
-        openSosModalBtn.addEventListener('click', () => {
-            playSound('warning');
-            triggerHaptic([100, 50, 100]);
-            sosModal.classList.remove('hidden');
-        });
-
-        closeSosModalBtn.addEventListener('click', () => {
-            playSound('click');
-            sosModal.classList.add('hidden');
-        });
-
-        sosModal.addEventListener('click', (e) => {
-            if (e.target === sosModal) {
-                sosModal.classList.add('hidden');
-            }
-        });
-
-        // ----------------------------------------------------
-        // Desktop Viewport Switcher (Phone Frame vs Wide)
-        // ----------------------------------------------------
-        const appContainer = document.getElementById('appContainer');
-        const viewPhoneBtn = document.getElementById('viewPhoneBtn');
-        const viewWideBtn = document.getElementById('viewWideBtn');
-
-        if (viewPhoneBtn && viewWideBtn) {
-            viewPhoneBtn.addEventListener('click', () => {
-                appContainer.classList.remove('fullwidth-mode');
-                viewPhoneBtn.className = "px-3 py-1 rounded-full bg-blue-600 text-white font-medium flex items-center space-x-1 transition-all";
-                viewWideBtn.className = "px-3 py-1 rounded-full text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition-all";
-                playSound('click');
-            });
-
-            viewWideBtn.addEventListener('click', () => {
-                appContainer.classList.add('fullwidth-mode');
-                viewWideBtn.className = "px-3 py-1 rounded-full bg-blue-600 text-white font-medium flex items-center space-x-1 transition-all";
-                viewPhoneBtn.className = "px-3 py-1 rounded-full text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition-all";
-                playSound('click');
-            });
-        }
-
-        // Initial setup
-        renderHistoryList();
     </script>
 </body>
-
 </html>
