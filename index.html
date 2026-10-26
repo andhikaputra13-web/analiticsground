@@ -2,322 +2,1963 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile GeoAnalyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile GeoAnalyzer — AI & CV Landslide Detection</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        body { background-color: #e2e8f0; } /* Latar abu-abu di desktop */
-        .mobile-container {
-            max-width: 420px; /* Ukuran maksimal HP */
+        :root {
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #cbd5e1 0%, #e2e8f0 55%, #cbd5e1 100%);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile App Frame: penuh di HP, elegan di tengah desktop */
+        .mobile-frame {
+            width: 100%;
+            max-width: 440px;
             margin: 0 auto;
-            background-color: #ffffff;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background-color: #f8fafc;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
             position: relative;
             overflow-x: hidden;
         }
-        .loader {
-            border: 4px solid #e5e7eb;
-            border-top: 4px solid #2563eb;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+
+        @media (min-width: 500px) {
+            body {
+                padding: 16px 0;
+            }
+            .mobile-frame {
+                min-height: calc(100vh - 32px);
+                border-radius: 28px;
+                border: 1px solid rgba(255, 255, 255, 0.75);
+            }
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        /* Animasi Laser Scanner saat ekstraksi fitur Computer Vision */
+        @keyframes laserScan {
+            0% {
+                top: 0%;
+                opacity: 0.9;
+            }
+            50% {
+                top: calc(100% - 3px);
+                opacity: 1;
+            }
+            100% {
+                top: 0%;
+                opacity: 0.9;
+            }
+        }
+
+        .scanner-beam {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #38bdf8 20%, #ffffff 50%, #38bdf8 80%, transparent 100%);
+            box-shadow: 0 0 14px 3px rgba(56, 189, 248, 0.85), 0 0 28px 6px rgba(37, 99, 235, 0.55);
+            animation: laserScan 1.3s ease-in-out infinite;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .scanner-grid {
+            background-image:
+                linear-gradient(to right, rgba(56, 189, 248, 0.16) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(56, 189, 248, 0.16) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Animasi Transisi Halus */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Transisi SVG Circular Gauge */
+        .gauge-ring {
+            transition: stroke-dashoffset 0.85s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s ease;
+        }
+
+        /* Scrollbar tipis untuk tab di layar sangat sempit */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Mobile Frame -->
-    <div class="mobile-container flex flex-col font-sans">
-        
-        <!-- App Header Mobile -->
-        <header class="bg-blue-600 text-white p-4 sticky top-0 z-10 shadow-md flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold tracking-wide">GeoAnalyzer</h1>
-                <p class="text-xs text-blue-200">AI Landslide Detection</p>
-            </div>
-            <div class="bg-blue-800 p-2 rounded-full">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+    <div class="mobile-frame flex flex-col">
+
+        <!-- Header Aplikasi Modern -->
+        <header class="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white px-5 pt-5 pb-4 sticky top-0 z-30 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shadow-inner">
+                        <svg class="w-5 h-5 text-sky-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-extrabold tracking-tight leading-none">GeoAnalyzer</h1>
+                        <p class="text-[11px] text-slate-300 font-medium mt-1">Optical Geotechnical & Landslide CV</p>
+                    </div>
+                </div>
+
+                <!-- Badge Status Sistem CV Aktif -->
+                <div class="flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>CV ENGINE AKTIF</span>
+                </div>
             </div>
         </header>
 
-        <!-- Main Content Area -->
-        <main class="p-4 pb-24 flex-1">
-            
-            <!-- Panduan -->
-            <div id="introCard" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-5">
-                <h2 class="text-sm font-bold text-blue-800 mb-1">Cek Area Rawan!</h2>
-                <p class="text-xs text-blue-600">Ambil foto lereng atau tanah. AI akan membaca piksel warna vegetasi dan tanah secara *real-time*.</p>
+        <!-- Konten Utama -->
+        <main class="p-4 pb-12 flex-1 space-y-4">
+
+            <!-- Banner Notifikasi / Error Non-Blocking -->
+            <div id="alertBanner" class="hidden rounded-2xl p-3.5 text-xs border flex items-start justify-between gap-2.5 animate-fade-up" role="alert">
+                <div class="flex items-start gap-2.5">
+                    <svg id="alertIcon" class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div id="alertMessage" class="leading-relaxed font-medium"></div>
+                </div>
+                <button type="button" id="closeAlertBtn" class="text-current opacity-60 hover:opacity-100 font-bold px-1" aria-label="Tutup peringatan">✕</button>
             </div>
 
-            <!-- Upload Box -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-5 text-center">
+            <!-- Kartu Panduan Awal -->
+            <section id="introCard" class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-4 shadow-md animate-fade-up">
+                <div class="flex items-start gap-3">
+                    <div class="bg-white/15 p-2 rounded-xl shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold leading-snug">Deteksi Kerentanan Lereng Berbasis Piksel</h2>
+                        <p class="text-[11px] text-blue-100 leading-relaxed mt-1">
+                            Unggah foto lereng atau tebing terbuka. Sistem memisahkan langit otomatis, menghitung indeks vegetasi <strong>VDVI</strong>, rasio tanah kupasan, serta gradien kemiringan &amp; alur erosi <strong>Sobel 3x3</strong>.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kotak Unggah Foto & Sampel Medan Realistis -->
+            <section id="uploadSection" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
                 <input type="file" id="imageInput" accept="image/*" class="hidden">
-                <label for="imageInput" class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 bg-gray-50 active:bg-gray-100">
-                    <svg class="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <span class="text-sm font-semibold text-gray-700">Tap untuk Pilih Foto</span>
-                    <span class="text-[10px] text-gray-400 mt-1">Gunakan foto area terbuka</span>
+
+                <label id="dropZone" for="imageInput" class="cursor-pointer group flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-6 bg-slate-50/70 hover:bg-blue-50/40 active:bg-slate-100 transition-all text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-100/80 text-blue-600 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-bold text-slate-800">Pilih Foto Lereng / Kamera</span>
+                    <span class="text-[11px] text-slate-400 mt-0.5">Mendukung JPG, PNG, WebP • Arahkan ke bidang miring lereng</span>
                 </label>
-            </div>
 
-            <!-- Preview & Analyze Button -->
-            <div id="previewContainer" class="hidden flex-col items-center mb-5">
-                <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border mb-4">
-                    <img id="imagePreview" class="w-full h-auto object-cover max-h-60" src="" alt="Preview">
-                    <div class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-1 rounded">
-                        <span id="pixelDataText">Memindai piksel...</span>
+                <!-- 3 Tombol Sampel Medan Prosedural Realistis -->
+                <div class="mt-3.5 pt-3 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] font-bold text-slate-600">Uji Instan Sampel Medan Realistis:</span>
+                        <span class="text-[10px] text-slate-400">Simulasi Fotogrametri</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" data-sample="forest" class="sample-btn flex flex-col items-center p-2 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 active:scale-95 transition-all text-center">
+                            <span class="text-base leading-none mb-1">🌲</span>
+                            <span class="text-[10px] font-bold leading-tight">Lereng Hutan Rapat</span>
+                        </button>
+                        <button type="button" data-sample="shrub" class="sample-btn flex flex-col items-center p-2 rounded-xl bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200/80 text-amber-900 active:scale-95 transition-all text-center">
+                            <span class="text-base leading-none mb-1">🌿</span>
+                            <span class="text-[10px] font-bold leading-tight">Semak Lembab Curam</span>
+                        </button>
+                        <button type="button" data-sample="scarp" class="sample-btn flex flex-col items-center p-2 rounded-xl bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/80 text-rose-900 active:scale-95 transition-all text-center">
+                            <span class="text-base leading-none mb-1">⛰️</span>
+                            <span class="text-[10px] font-bold leading-tight">Tebing Tanah Merah</span>
+                        </button>
                     </div>
                 </div>
-                <button id="analyzeBtn" class="w-full bg-blue-600 active:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-all text-sm">
-                    Mulai Analisis Piksel
+            </section>
+
+            <!-- Panel Kalibrasi Konteks Lapangan Opsional (Faktor Pemicu Geoteknik) -->
+            <section id="calibrationPanel" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
+                <div class="flex items-center justify-between mb-2.5">
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                        </svg>
+                        <h3 class="text-xs font-bold text-slate-800">Kalibrasi Pemicu Lapangan</h3>
+                    </div>
+                    <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Opsional • Bobot 15%</span>
+                </div>
+
+                <!-- Pilihan Curah Hujan -->
+                <div class="mb-3">
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1.5">Kondisi Curah Hujan Lokasi:</label>
+                    <div class="grid grid-cols-3 gap-1.5" id="rainGroup">
+                        <button type="button" data-rain="dry" class="rain-opt py-2 px-2 rounded-xl text-[10px] font-bold border transition-all bg-blue-600 text-white border-blue-600 shadow-sm">
+                            ☀️ Cerah / Kering
+                        </button>
+                        <button type="button" data-rain="moderate" class="rain-opt py-2 px-2 rounded-xl text-[10px] font-bold border transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">
+                            🌦️ Hujan Sedang
+                        </button>
+                        <button type="button" data-rain="heavy" class="rain-opt py-2 px-2 rounded-xl text-[10px] font-bold border transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">
+                            ⛈️ Lebat &gt;2 Jam
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pilihan Indikasi Lapangan -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1.5">Indikasi Visual / Hidrologi Tambahan:</label>
+                    <div class="grid grid-cols-2 gap-1.5" id="fieldGroup">
+                        <button type="button" data-field="normal" class="field-opt py-2 px-2.5 rounded-xl text-[10px] font-bold border transition-all bg-blue-600 text-white border-blue-600 shadow-sm">
+                            ✓ Kondisi Normal
+                        </button>
+                        <button type="button" data-field="seepage" class="field-opt py-2 px-2.5 rounded-xl text-[10px] font-bold border transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">
+                            ⚠️ Rembesan / Retakan
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kotak Pratinjau Kanvas Interaktif & Pemindai -->
+            <section id="previewSection" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 animate-fade-up">
+
+                <!-- 4 Tab Mode Tampilan Pembuktian (Muncul setelah dianalisis) -->
+                <div id="overlayTabs" class="hidden mb-3">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode Pembuktian Piksel CV</span>
+                        <span id="cvDimBadge" class="text-[10px] font-semibold text-slate-500"></span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl">
+                        <button type="button" data-mode="original" class="mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all bg-white text-slate-900 shadow-sm">
+                            Foto Asli
+                        </button>
+                        <button type="button" data-mode="segmentation" class="mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900">
+                            Segmentasi
+                        </button>
+                        <button type="button" data-mode="sobel" class="mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900">
+                            Gradien Sobel
+                        </button>
+                        <button type="button" data-mode="heatmap" class="mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900">
+                            Peta Risiko
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Viewport Gambar / Kanvas Pembuktian -->
+                <div class="relative w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
+                    <!-- Kanvas Interaktif Utama -->
+                    <canvas id="displayCanvas" class="w-full h-auto block max-h-72 object-contain mx-auto"></canvas>
+
+                    <!-- Overlay Pemindaian Laser saat Proses Analisis -->
+                    <div id="scannerOverlay" class="hidden absolute inset-0 bg-slate-950/55 backdrop-blur-[1px] scanner-grid flex flex-col items-center justify-center p-4 z-20">
+                        <div class="scanner-beam"></div>
+                        <div class="bg-slate-900/90 border border-sky-400/30 rounded-2xl px-4 py-3 text-center shadow-xl max-w-[260px]">
+                            <div class="flex items-center justify-center gap-2 mb-1.5">
+                                <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+                                <span class="text-[11px] font-extrabold text-sky-300 tracking-wide uppercase">Ekstraksi Fitur CV</span>
+                            </div>
+                            <p id="scanStageText" class="text-xs font-semibold text-white leading-snug">Masking Langit &amp; Kalibrasi HSV...</p>
+                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-2.5">
+                                <div id="scanProgressBar" class="bg-sky-400 h-full transition-all duration-300" style="width: 15%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Informasi Resolusi Asli -->
+                    <div id="rawInfoBadge" class="absolute bottom-2 right-2 bg-slate-900/75 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg border border-white/10">
+                        Memuat citra...
+                    </div>
+                </div>
+
+                <!-- Legenda Mini Dinamis Sesuai Tab Mode -->
+                <div id="modeLegend" class="hidden mt-2.5 pt-2.5 border-t border-slate-100 text-[10px] text-slate-600">
+                    <!-- Diisi oleh JS sesuai mode tampilan -->
+                </div>
+
+                <!-- Tombol Mulai Analisis -->
+                <button type="button" id="analyzeBtn" class="mt-3.5 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-600/20 transition-all text-sm flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                    <span>Jalankan Analisis Geoteknik Piksel</span>
                 </button>
-            </div>
+            </section>
 
-            <!-- Loading State -->
-            <div id="loadingState" class="hidden flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 mb-5">
-                <div class="loader mb-3"></div>
-                <h3 class="text-sm font-bold text-gray-800">Menghitung Ekstraksi Fitur...</h3>
-                <p class="text-[11px] text-gray-500 text-center mt-1">Menganalisa kerapatan warna hijau dan gelap pada gambar</p>
-            </div>
+            <!-- Bagian Hasil Analisis Komprehensif -->
+            <section id="resultSection" class="hidden space-y-4 animate-fade-up">
 
-            <!-- Results Section -->
-            <div id="resultSection" class="hidden">
-                <h2 class="text-lg font-bold text-gray-800 mb-3">Hasil Analisis</h2>
-                
-                <!-- Risk Card -->
-                <div id="riskCard" class="p-5 rounded-2xl mb-4 text-center text-white shadow-md">
-                    <p class="text-xs opacity-90 mb-1 uppercase tracking-wide">Potensi Longsor</p>
-                    <h3 id="resPercentage" class="text-4xl font-extrabold mb-1">0%</h3>
-                    <p id="riskStatus" class="text-sm font-semibold bg-white bg-opacity-20 inline-block px-3 py-1 rounded-full mt-1">Status</p>
-                </div>
+                <!-- Kartu Utama Gauge Risiko & Keyakinan Citra -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Skor Kerentanan Longsor</h2>
+                        <div id="confidenceBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                            Keyakinan Citra: --%
+                        </div>
+                    </div>
 
-                <!-- Grid Details -->
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">Tutupan Vegetasi</div>
-                        <div id="resVeg" class="text-sm font-bold text-gray-800 leading-tight">...</div>
-                        <div id="vegScore" class="text-[10px] text-green-600 mt-1"></div>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">Kondisi Tanah</div>
-                        <div id="resSoil" class="text-sm font-bold text-gray-800 leading-tight">...</div>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">Kondisi Drainase</div>
-                        <div id="resDrain" class="text-sm font-bold text-gray-800 leading-tight">...</div>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">Est. Kemiringan</div>
-                        <div id="resSlope" class="text-sm font-bold text-gray-800 leading-tight">...</div>
+                    <div class="flex items-center gap-5">
+                        <!-- SVG Circular Ring Gauge -->
+                        <div class="relative w-28 h-28 shrink-0 flex items-center justify-center">
+                            <svg class="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="11"></circle>
+                                <circle id="gaugeArc" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="11" stroke-linecap="round" stroke-dasharray="301.59" stroke-dashoffset="301.59"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <span id="resPercentage" class="text-2xl font-extrabold text-slate-900 leading-none">0%</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase mt-1">Indeks Bahaya</span>
+                            </div>
+                        </div>
+
+                        <!-- Status & Ringkasan Bobot -->
+                        <div class="flex-1 min-w-0">
+                            <span id="riskStatusBadge" class="inline-block text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2 bg-emerald-100 text-emerald-800">
+                                RELATIF AMAN
+                            </span>
+                            <p id="riskTagline" class="text-xs text-slate-600 leading-relaxed font-medium">
+                                Stabilitas permukaan lereng terpantau baik berdasarkan tutupan tajuk dan kemiringan.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Conclusion -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h4 class="text-xs font-bold text-gray-800 mb-2 border-b pb-1">Kesimpulan Sistem:</h4>
-                    <p id="resConclusion" class="text-[12px] text-gray-600 leading-relaxed text-justify"></p>
+                <!-- 4 Kartu Metrik Geoteknik Utama -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- 1. Tutupan Vegetasi (VDVI) -->
+                    <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                <span>Tutupan Vegetasi</span>
+                                <span class="text-emerald-600 font-extrabold">30%</span>
+                            </div>
+                            <div id="metricVegTitle" class="text-xs font-extrabold text-slate-800 leading-snug">-</div>
+                            <div id="metricVegSub" class="text-[10px] font-semibold text-slate-500 mt-1">-</div>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2.5">
+                            <div id="barVeg" class="h-full rounded-full transition-all duration-500 bg-emerald-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tanah Kupasan & Kelembaban -->
+                    <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                <span>Kondisi Tanah</span>
+                                <span class="text-amber-600 font-extrabold">25%</span>
+                            </div>
+                            <div id="metricSoilTitle" class="text-xs font-extrabold text-slate-800 leading-snug">-</div>
+                            <div id="metricSoilSub" class="text-[10px] font-semibold text-slate-500 mt-1">-</div>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2.5">
+                            <div id="barSoil" class="h-full rounded-full transition-all duration-500 bg-amber-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Estimasi Kemiringan Sobel -->
+                    <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                <span>Kemiringan Sobel</span>
+                                <span class="text-rose-600 font-extrabold">30%</span>
+                            </div>
+                            <div id="metricSlopeTitle" class="text-xs font-extrabold text-slate-800 leading-snug">-</div>
+                            <div id="metricSlopeSub" class="text-[10px] font-semibold text-slate-500 mt-1">-</div>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2.5">
+                            <div id="barSlope" class="h-full rounded-full transition-all duration-500 bg-rose-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Drainase & Erosi Alur -->
+                    <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                <span>Drainase &amp; Erosi</span>
+                                <span class="text-blue-600 font-extrabold">15%</span>
+                            </div>
+                            <div id="metricDrainTitle" class="text-xs font-extrabold text-slate-800 leading-snug">-</div>
+                            <div id="metricDrainSub" class="text-[10px] font-semibold text-slate-500 mt-1">-</div>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2.5">
+                            <div id="barDrain" class="h-full rounded-full transition-all duration-500 bg-blue-500" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Reset Button -->
-                <button id="resetBtn" class="w-full mt-5 bg-gray-100 active:bg-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-xl text-sm border border-gray-300">
-                    Analisis Foto Lain
+                <!-- Rincian Komposisi Piksel Medan -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-extrabold text-slate-800">Rincian Segmentasi Piksel Citra</h3>
+                        <span id="terrainValidText" class="text-[10px] font-semibold text-slate-500">Medan Valid: --%</span>
+                    </div>
+
+                    <!-- Stacked Bar Komposisi -->
+                    <div class="w-full h-3 rounded-full overflow-hidden flex bg-slate-100 mb-3">
+                        <div id="segBarVeg" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%" title="Vegetasi"></div>
+                        <div id="segBarBare" class="bg-orange-500 h-full transition-all duration-500" style="width: 0%" title="Tanah Kupasan"></div>
+                        <div id="segBarWet" class="bg-purple-600 h-full transition-all duration-500" style="width: 0%" title="Zona Lembab/Jenuh"></div>
+                        <div id="segBarRock" class="bg-slate-400 h-full transition-all duration-500" style="width: 0%" title="Batuan/Permukaan Kering"></div>
+                        <div id="segBarSky" class="bg-sky-300 h-full transition-all duration-500" style="width: 0%" title="Langit Diabaikan"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-y-1.5 gap-x-3 text-[11px]">
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>Vegetasi (Medan)</span>
+                            <strong id="pctVegText" class="text-slate-800">0%</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-2.5 rounded-sm bg-orange-500"></span>Tanah Kupasan</span>
+                            <strong id="pctBareText" class="text-slate-800">0%</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-2.5 rounded-sm bg-purple-600"></span>Lembab / Jenuh</span>
+                            <strong id="pctWetText" class="text-slate-800">0%</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>Batuan / Kering</span>
+                            <strong id="pctRockText" class="text-slate-800">0%</strong>
+                        </div>
+                        <div class="col-span-2 pt-1 mt-0.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                            <span class="flex items-center gap-1.5 text-slate-500"><span class="w-2.5 h-2.5 rounded-sm bg-sky-300"></span>Masking Langit (Dikeluarkan dari Pembagi Medan)</span>
+                            <strong id="pctSkyText" class="text-sky-700">0% dari foto</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kesimpulan Geoteknik & Rekomendasi Mitigasi Spesifik -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
+                    <h3 class="text-xs font-extrabold text-slate-800 mb-2 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                        <span>Analisis Geoteknik &amp; Rekomendasi Mitigasi</span>
+                    </h3>
+                    <p id="resConclusion" class="text-xs text-slate-600 leading-relaxed mb-3"></p>
+
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">Tindakan Mitigasi Disarankan:</div>
+                        <ul id="mitigationList" class="space-y-1.5 text-[11px] text-slate-600"></ul>
+                    </div>
+                </div>
+
+                <!-- Disclaimer Ilmiah -->
+                <div class="bg-slate-100/90 border border-slate-200/80 rounded-xl p-3 text-[10px] text-slate-500 leading-relaxed">
+                    <strong>Catatan Ilmiah:</strong> Analisis ini menggunakan ekstraksi fitur optik permukaan (indeks spektral tampak <em>VDVI</em>, kromatisitas tanah, dan gradien tepi <em>Sobel</em>) sebagai skrining awal. Evaluasi stabilitas lereng definitif tetap memerlukan uji mekanika tanah (kohesi, sudut geser dalam, muka air tanah) dan observasi geoteknik langsung di lapangan.
+                </div>
+
+                <!-- Tombol Reset Analisis -->
+                <button type="button" id="resetBtn" class="w-full bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-bold py-3.5 px-4 rounded-xl text-xs border border-slate-300 shadow-sm transition-all flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Analisis Foto Lereng Lainnya</span>
                 </button>
-            </div>
-            
-            <!-- Hidden Canvas for Pixel Processing -->
-            <canvas id="canvas" class="hidden"></canvas>
+            </section>
+
+            <!-- Offscreen Canvas untuk Pipeline Computer Vision (Maks 320px) -->
+            <canvas id="cvCanvas" class="hidden"></canvas>
         </main>
     </div>
 
-    <!-- Script Logika -->
     <script>
+        /**
+         * ============================================================================
+         * MOBILE GEOANALYZER — COMPUTER VISION & GEOTECHNICAL HAZARD PIPELINE
+         * ============================================================================
+         * Kelas Piksel (classMap):
+         * 0 = Langit / Awan (Sky Masking - diabaikan dari pembagi medan)
+         * 1 = Vegetasi Rapat / Kanopi Pohon
+         * 2 = Vegetasi Sedang / Semak & Rumput
+         * 3 = Tanah Terbuka / Kupasan Laterit / Mahkota Longsor
+         * 4 = Tanah Lembab / Lempung Jenuh Air / Rembesan Gelap
+         * 5 = Batuan Singkapan / Tanah Kering Padat
+         */
+
+        const MAX_CV_DIM = 320; // Batas sisi terpanjang kanvas CV agar cepat & hemat memori di HP
+        const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 48; // r = 48 -> ~301.59
+
+        // Elemen UI Utama
         const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('previewContainer');
-        const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const loadingState = document.getElementById('loadingState');
-        const resultSection = document.getElementById('resultSection');
+        const dropZone = document.getElementById('dropZone');
         const introCard = document.getElementById('introCard');
+        const previewSection = document.getElementById('previewSection');
+        const displayCanvas = document.getElementById('displayCanvas');
+        const displayCtx = displayCanvas.getContext('2d');
+        const cvCanvas = document.getElementById('cvCanvas');
+        const cvCtx = cvCanvas.getContext('2d', { willReadFrequently: true });
+
+        const scannerOverlay = document.getElementById('scannerOverlay');
+        const scanStageText = document.getElementById('scanStageText');
+        const scanProgressBar = document.getElementById('scanProgressBar');
+        const rawInfoBadge = document.getElementById('rawInfoBadge');
+        const cvDimBadge = document.getElementById('cvDimBadge');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const overlayTabs = document.getElementById('overlayTabs');
+        const modeLegend = document.getElementById('modeLegend');
+        const resultSection = document.getElementById('resultSection');
         const resetBtn = document.getElementById('resetBtn');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const pixelDataText = document.getElementById('pixelDataText');
 
-        let imgObj = new Image();
+        // Banner Peringatan
+        const alertBanner = document.getElementById('alertBanner');
+        const alertMessage = document.getElementById('alertMessage');
+        const closeAlertBtn = document.getElementById('closeAlertBtn');
 
-        // 1. Membaca & Menampilkan Gambar
-        imageInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imgObj.src = e.target.result;
-                    imgObj.onload = function() {
-                        imagePreview.src = imgObj.src;
-                        previewContainer.classList.remove('hidden');
-                        previewContainer.classList.add('flex');
-                        introCard.classList.add('hidden');
-                        resultSection.classList.add('hidden');
-                        
-                        pixelDataText.textContent = `Piksel dimuat: ${imgObj.width}x${imgObj.height}`;
-                        
-                        // Siapkan ukuran canvas untuk pemrosesan
-                        canvas.width = imgObj.width;
-                        canvas.height = imgObj.height;
+        // State Aplikasi & Cache Analisis Piksel
+        let loadedImage = null;
+        let origWidth = 0;
+        let origHeight = 0;
+        let currentMode = 'original';
+        let isAnalyzing = false;
+        let scanTimers = [];
+
+        // State Kalibrasi Konteks Lapangan
+        let rainState = 'dry';      // 'dry' | 'moderate' | 'heavy'
+        let fieldState = 'normal';  // 'normal' | 'seepage'
+
+        // Cache Hasil Ekstraksi CV untuk Re-kalkulasi Instan & Render Overlay
+        let cvCache = null;
+
+        /**
+         * Menampilkan pesan peringatan ramah (error atau warning kualitas citra)
+         */
+        function showBanner(htmlText, type = 'warning') {
+            alertBanner.className = 'rounded-2xl p-3.5 text-xs border flex items-start justify-between gap-2.5 animate-fade-up ';
+            if (type === 'error') {
+                alertBanner.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-800');
+            } else {
+                alertBanner.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-900');
+            }
+            alertMessage.innerHTML = htmlText;
+            alertBanner.classList.remove('hidden');
+        }
+
+        function hideBanner() {
+            alertBanner.classList.add('hidden');
+        }
+
+        closeAlertBtn.addEventListener('click', hideBanner);
+
+        /**
+         * Bersihkan semua timer animasi scanner yang sedang berjalan
+         */
+        function clearScanTimers() {
+            scanTimers.forEach(t => clearTimeout(t));
+            scanTimers = [];
+            isAnalyzing = false;
+            scannerOverlay.classList.add('hidden');
+        }
+
+        /**
+         * Konversi RGB (0..255) ke HSV: Hue (0..360), Saturation (0..1), Value (0..1)
+         */
+        function rgbToHsv(r, g, b) {
+            const rf = r / 255;
+            const gf = g / 255;
+            const bf = b / 255;
+            const max = Math.max(rf, gf, bf);
+            const min = Math.min(rf, gf, bf);
+            const d = max - min;
+
+            let h = 0;
+            if (d > 1e-5) {
+                if (max === rf) {
+                    h = ((gf - bf) / d) % 6;
+                } else if (max === gf) {
+                    h = (bf - rf) / d + 2;
+                } else {
+                    h = (rf - gf) / d + 4;
+                }
+                h *= 60;
+                if (h < 0) h += 360;
+            }
+            const s = max === 0 ? 0 : d / max;
+            return [h, s, max];
+        }
+
+        /**
+         * Memuat Data URL gambar ke aplikasi dan menyiapkan kanvas tampilan
+         */
+        function loadPhotoSource(dataUrl, labelTag = '') {
+            clearScanTimers();
+            hideBanner();
+            cvCache = null;
+            currentMode = 'original';
+
+            const img = new Image();
+            img.onload = function () {
+                const nw = img.naturalWidth || img.width;
+                const nh = img.naturalHeight || img.height;
+                if (!nw || !nh) {
+                    showBanner('Dimensi gambar tidak terbaca. Silakan pilih berkas foto yang valid.', 'error');
+                    return;
+                }
+
+                loadedImage = img;
+                origWidth = nw;
+                origHeight = nh;
+
+                // Siapkan ukuran kanvas tampilan (maks lebar 640px agar tajam di layar Retina HP)
+                const dispScale = Math.min(1, 640 / Math.max(nw, nh));
+                displayCanvas.width = Math.max(1, Math.round(nw * dispScale));
+                displayCanvas.height = Math.max(1, Math.round(nh * dispScale));
+                displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+                displayCtx.drawImage(loadedImage, 0, 0, displayCanvas.width, displayCanvas.height);
+
+                // Siapkan ukuran kanvas CV (maks 320px sisi terpanjang sesuai spesifikasi)
+                const cvScale = Math.min(1, MAX_CV_DIM / Math.max(nw, nh));
+                cvCanvas.width = Math.max(16, Math.round(nw * cvScale));
+                cvCanvas.height = Math.max(16, Math.round(nh * cvScale));
+
+                // Update state UI
+                introCard.classList.add('hidden');
+                previewSection.classList.remove('hidden');
+                overlayTabs.classList.add('hidden');
+                modeLegend.classList.add('hidden');
+                resultSection.classList.add('hidden');
+                analyzeBtn.classList.remove('hidden');
+                rawInfoBadge.classList.remove('hidden');
+                rawInfoBadge.textContent = labelTag
+                    ? `${labelTag} • ${nw}×${nh}px`
+                    : `Citra Asli: ${nw}×${nh}px`;
+
+                updateTabButtonsUI('original');
+            };
+
+            img.onerror = function () {
+                showBanner('Gagal memuat berkas citra. Pastikan file berformat JPG, PNG, atau WebP.', 'error');
+            };
+
+            img.src = dataUrl;
+        }
+
+        /**
+         * Handler pembacaan file dari galeri/kamera atau drag-and-drop
+         */
+        function handleImageFile(file) {
+            if (!file) return;
+            if (!file.type || !file.type.startsWith('image/')) {
+                showBanner('Format berkas tidak didukung. Harap pilih foto lereng berformat gambar (JPG/PNG/WebP).', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => loadPhotoSource(e.target.result);
+            reader.onerror = () => showBanner('Gagal membaca berkas dari penyimpanan perangkat.', 'error');
+            reader.readAsDataURL(file);
+        }
+
+        // Reset input saat diklik agar foto yang sama dapat dipilih ulang
+        imageInput.addEventListener('click', () => {
+            imageInput.value = '';
+        });
+
+        imageInput.addEventListener('change', e => {
+            if (e.target.files && e.target.files[0]) {
+                handleImageFile(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop Interaktif
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropZone.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('border-blue-500', 'bg-blue-50/70');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50/70');
+            });
+        });
+
+        dropZone.addEventListener('drop', e => {
+            const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) handleImageFile(file);
+        });
+
+        /**
+         * Kontrol Kalibrasi Konteks Lapangan (Dapat diubah sebelum atau sesudah analisis)
+         */
+        document.querySelectorAll('.rain-opt').forEach(btn => {
+            btn.addEventListener('click', function () {
+                rainState = this.getAttribute('data-rain');
+                document.querySelectorAll('.rain-opt').forEach(b => {
+                    const active = b === this;
+                    b.className = active
+                        ? 'rain-opt py-2 px-2 rounded-xl text-[10px] font-bold border transition-all bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'rain-opt py-2 px-2 rounded-xl text-[10px] font-bold border transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100';
+                });
+                // Jika hasil sudah tampil, langsung perbarui skor secara real-time!
+                if (cvCache && !resultSection.classList.contains('hidden')) {
+                    computeGeotechnicalScoringAndRender();
+                    if (currentMode === 'heatmap') renderOverlayMode('heatmap');
+                }
+            });
+        });
+
+        document.querySelectorAll('.field-opt').forEach(btn => {
+            btn.addEventListener('click', function () {
+                fieldState = this.getAttribute('data-field');
+                document.querySelectorAll('.field-opt').forEach(b => {
+                    const active = b === this;
+                    b.className = active
+                        ? 'field-opt py-2 px-2.5 rounded-xl text-[10px] font-bold border transition-all bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'field-opt py-2 px-2.5 rounded-xl text-[10px] font-bold border transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100';
+                });
+                if (cvCache && !resultSection.classList.contains('hidden')) {
+                    computeGeotechnicalScoringAndRender();
+                    if (currentMode === 'heatmap') renderOverlayMode('heatmap');
+                }
+            });
+        });
+
+        /**
+         * Eksekusi Analisis dengan Tahapan Progres Scanner (~1.2 detik)
+         */
+        analyzeBtn.addEventListener('click', function () {
+            if (!loadedImage || isAnalyzing) return;
+
+            hideBanner();
+            isAnalyzing = true;
+            analyzeBtn.classList.add('hidden');
+            scannerOverlay.classList.remove('hidden');
+            scanStageText.textContent = '1/4 • Masking Langit & Kalibrasi HSV...';
+            scanProgressBar.style.width = '22%';
+
+            scanTimers.push(setTimeout(() => {
+                scanStageText.textContent = '2/4 • Menghitung Indeks Vegetasi VDVI & ExG...';
+                scanProgressBar.style.width = '50%';
+            }, 300));
+
+            scanTimers.push(setTimeout(() => {
+                scanStageText.textContent = '3/4 • Filter Gradien Sobel 3x3 & Deteksi Gawir...';
+                scanProgressBar.style.width = '78%';
+            }, 620));
+
+            scanTimers.push(setTimeout(() => {
+                scanStageText.textContent = '4/4 • Kalkulasi Bobot Geoteknik Multi-Parameter...';
+                scanProgressBar.style.width = '96%';
+            }, 920));
+
+            scanTimers.push(setTimeout(() => {
+                try {
+                    runComputerVisionPipeline();
+                    clearScanTimers();
+
+                    overlayTabs.classList.remove('hidden');
+                    resultSection.classList.remove('hidden');
+                    rawInfoBadge.classList.add('hidden');
+                    cvDimBadge.textContent = `Grid CV: ${cvCanvas.width}×${cvCanvas.height}px`;
+
+                    // Langsung tampilkan tab Segmentasi Lahan sebagai bukti analisis piksel nyata
+                    setOverlayMode('segmentation');
+                    computeGeotechnicalScoringAndRender();
+                } catch (err) {
+                    clearScanTimers();
+                    analyzeBtn.classList.remove('hidden');
+                    showBanner('Terjadi kendala saat memproses matriks piksel gambar. Coba gunakan foto lainnya.', 'error');
+                }
+            }, 1220));
+        });
+
+        /**
+         * ============================================================================
+         * INTI PIPELINE COMPUTER VISION PADA HTML5 CANVAS (MAKS 320PX)
+         * ============================================================================
+         */
+        function runComputerVisionPipeline() {
+            const w = cvCanvas.width;
+            const h = cvCanvas.height;
+            const totalPixels = w * h;
+
+            cvCtx.clearRect(0, 0, w, h);
+            cvCtx.drawImage(loadedImage, 0, 0, w, h);
+
+            const imgData = cvCtx.getImageData(0, 0, w, h);
+            const rgba = imgData.data;
+
+            // Array Fitur Piksel
+            const lum = new Float32Array(totalPixels);
+            const hue = new Float32Array(totalPixels);
+            const sat = new Float32Array(totalPixels);
+            const val = new Float32Array(totalPixels);
+            const vdvi = new Float32Array(totalPixels);
+            const exg = new Float32Array(totalPixels);
+            const redBrown = new Float32Array(totalPixels);
+
+            // 1. Ekstraksi Fitur Warna Spektral Tampak (HSV, Luminance, VDVI, ExG, Soil Chromaticity)
+            for (let i = 0; i < totalPixels; i++) {
+                const p = i * 4;
+                const r = rgba[p];
+                const g = rgba[p + 1];
+                const b = rgba[p + 2];
+
+                lum[i] = 0.299 * r + 0.587 * g + 0.114 * b;
+                const [hDeg, sVal, vVal] = rgbToHsv(r, g, b);
+                hue[i] = hDeg;
+                sat[i] = sVal;
+                val[i] = vVal;
+
+                // Rumus Fotogrametri UAV: VDVI = (2G - R - B) / (2G + R + B + 1)
+                vdvi[i] = (2 * g - r - b) / (2 * g + r + b + 1);
+                exg[i] = (2 * g - r - b) / 255;
+
+                // Indeks kemerahan/kecoklatan tanah tropis
+                redBrown[i] = (r - b) / (r + g + b + 1);
+            }
+
+            // 2. Konvolusi Operator Sobel 3x3 Halus (Fine Texture & Gully Edges)
+            const gradMag = new Float32Array(totalPixels);
+            const fineGx = new Float32Array(totalPixels);
+            const fineGy = new Float32Array(totalPixels);
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const idx = y * w + x;
+                    const tl = lum[(y - 1) * w + (x - 1)];
+                    const tc = lum[(y - 1) * w + x];
+                    const tr = lum[(y - 1) * w + (x + 1)];
+                    const ml = lum[y * w + (x - 1)];
+                    const mr = lum[y * w + (x + 1)];
+                    const bl = lum[(y + 1) * w + (x - 1)];
+                    const bc = lum[(y + 1) * w + x];
+                    const br = lum[(y + 1) * w + (x + 1)];
+
+                    const gx = (-tl + tr) + (-2 * ml + 2 * mr) + (-bl + br);
+                    const gy = (-tl - 2 * tc - tr) + (bl + 2 * bc + br);
+
+                    fineGx[idx] = gx;
+                    fineGy[idx] = gy;
+                    gradMag[idx] = Math.hypot(gx, gy);
+                }
+            }
+
+            // 3. Deteksi & Masking Langit Otomatis (Sky Masking Top-Down + HSV + Smooth Gradient)
+            const classMap = new Uint8Array(totalPixels); // Default 0, nanti diisi 0..5
+            const isSky = new Uint8Array(totalPixels);
+
+            for (let y = 0; y < h; y++) {
+                const yRatio = y / h;
+                for (let x = 0; x < w; x++) {
+                    const idx = y * w + x;
+                    const hDeg = hue[idx];
+                    const sVal = sat[idx];
+                    const vVal = val[idx];
+                    const vd = vdvi[idx];
+                    const gMag = gradMag[idx];
+
+                    // Cek apakah piksel tepat di atasnya sudah terdeteksi sebagai langit (kontinuitas vertikal langit)
+                    const aboveIsSky = y === 0 ? true : (isSky[(y - 1) * w + x] === 1 || (x > 0 && isSky[(y - 1) * w + (x - 1)] === 1) || (x < w - 1 && isSky[(y - 1) * w + (x + 1)] === 1));
+
+                    // A. Langit Biru / Sian Cerah (umum di bagian atas s.d. 60% gambar)
+                    const clearBlueSky = (
+                        yRatio < 0.62 &&
+                        hDeg >= 182 && hDeg <= 252 &&
+                        sVal >= 0.14 &&
+                        vVal >= 0.42 &&
+                        vd < 0.04 &&
+                        gMag < 105 &&
+                        (yRatio < 0.45 || aboveIsSky)
+                    );
+
+                    // B. Langit Putih-Abu Mendung / Kabut Cerah (saturasi rendah, kecerahan tinggi, gradien halus)
+                    const overcastSky = (
+                        yRatio < 0.56 &&
+                        sVal < 0.17 &&
+                        vVal >= (aboveIsSky ? 0.63 : 0.74) &&
+                        vd < 0.03 &&
+                        redBrown[idx] < 0.05 &&
+                        gMag < (aboveIsSky ? 62 : 42) &&
+                        (yRatio < 0.36 || aboveIsSky)
+                    );
+
+                    if (clearBlueSky || overcastSky) {
+                        isSky[idx] = 1;
+                        classMap[idx] = 0;
                     }
                 }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 2. Tombol Analisa Diklik
-        analyzeBtn.addEventListener('click', function() {
-            previewContainer.classList.add('hidden');
-            previewContainer.classList.remove('flex');
-            loadingState.classList.remove('hidden');
-            loadingState.classList.add('flex');
-
-            // Simulasi proses AI 2 detik sebelum menampilkan hasil perhitungan Canvas
-            setTimeout(() => {
-                processImageToData();
-                loadingState.classList.add('hidden');
-                loadingState.classList.remove('flex');
-                resultSection.classList.remove('hidden');
-                previewContainer.classList.remove('hidden');
-                previewContainer.classList.add('flex');
-                analyzeBtn.classList.add('hidden');
-            }, 2000);
-        });
-
-        // 3. Logika "Akurat" Pemrosesan Pixel Gambar menggunakan Canvas
-        function processImageToData() {
-            // Gambar image ke hidden canvas
-            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
-            
-            // Mengambil semua data RGB piksel gambar
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            let greenPixels = 0;
-            let darkPixels = 0;
-            let totalPixels = data.length / 4; // Karena 1 pixel = 4 nilai (R, G, B, Alpha)
-
-            // Looping ke setiap piksel gambar untuk mencari warna hijau (daun) & gelap (tanah basah)
-            for(let i = 0; i < data.length; i += 4) {
-                let r = data[i], g = data[i+1], b = data[i+2];
-                // Logika mendeteksi warna hijau (Vegetasi)
-                if(g > r + 15 && g > b + 15) {
-                    greenPixels++;
-                }
-                // Logika mendeteksi warna gelap/coklat tua (Tanah/Kelembaban)
-                if(r < 90 && g < 90 && b < 90) {
-                    darkPixels++;
-                }
             }
 
-            // Persentase
-            let percentGreen = (greenPixels / totalPixels) * 100;
-            let percentDark = (darkPixels / totalPixels) * 100;
+            // 4. Klasifikasi Piksel Medan Non-Langit (VDVI, Tanah Kupasan, Kelembaban, Batuan)
+            let skyCount = 0;
+            let denseVegCount = 0;
+            let sparseVegCount = 0;
+            let bareSoilCount = 0;
+            let wetSoilCount = 0;
+            let rockDryCount = 0;
+            let vdviVegSum = 0;
+            let vdviTerrainSum = 0;
+            let lowerSlopeWetBonus = 0;
 
-            // Generate "Seed" angka konstan dari dimensi & ukuran file agar hasilnya selalu konsisten untuk gambar yang sama
-            const fileSeed = (canvas.width * canvas.height) % 100;
+            for (let y = 0; y < h; y++) {
+                const yRatio = y / h;
+                for (let x = 0; x < w; x++) {
+                    const idx = y * w + x;
 
-            generateResults(percentGreen, percentDark, fileSeed);
+                    if (isSky[idx] === 1) {
+                        skyCount++;
+                        continue;
+                    }
+
+                    const p = idx * 4;
+                    const r = rgba[p];
+                    const g = rgba[p + 1];
+                    const b = rgba[p + 2];
+                    const hDeg = hue[idx];
+                    const sVal = sat[idx];
+                    const vVal = val[idx];
+                    const vd = vdvi[idx];
+                    const eg = exg[idx];
+                    const rb = redBrown[idx];
+                    const gMag = gradMag[idx];
+
+                    vdviTerrainSum += vd;
+
+                    // --- Deteksi Vegetasi Ilmiah (VDVI + ExG + Hue Hijau-Kuning Alami 52°–168°) ---
+                    const isVegetation = (
+                        (vd > 0.055 && hDeg >= 52 && hDeg <= 168 && sVal >= 0.12 && vVal >= 0.09) ||
+                        (vd > 0.115 && eg > 0.06 && g > r && g > b) ||
+                        // Bayangan kanopi hutan lebat (gelap namun tetap memiliki dominasi klorofil hijau)
+                        (vVal >= 0.06 && vVal < 0.25 && vd > 0.035 && hDeg >= 72 && hDeg <= 165 && sVal >= 0.15)
+                    );
+
+                    if (isVegetation) {
+                        vdviVegSum += vd;
+                        // Pisahkan Kanopi Pohon Rapat vs Semak/Rumput Tipis
+                        if ((vd >= 0.145 && hDeg >= 78) || (hDeg >= 85 && hDeg <= 160 && vVal < 0.56 && gMag >= 24)) {
+                            classMap[idx] = 1; // Vegetasi Rapat / Kanopi
+                            denseVegCount++;
+                        } else {
+                            classMap[idx] = 2; // Semak / Rumput Tipis
+                            sparseVegCount++;
+                        }
+                        continue;
+                    }
+
+                    // --- Cek apakah piksel gelap ini hanya bayangan celah daun di tengah kanopi ---
+                    // Jika sangat gelap tapi dikelilingi piksel hijau kuat, jangan salah klasifikasi sebagai lumpur jenuh
+                    let nearGreen = false;
+                    if (vVal < 0.20 && x > 1 && x < w - 2 && y > 1 && y < h - 2) {
+                        const n1 = vdvi[idx - 2];
+                        const n2 = vdvi[idx + 2];
+                        const n3 = vdvi[(y - 2) * w + x];
+                        const n4 = vdvi[(y + 2) * w + x];
+                        if ((n1 > 0.10 ? 1 : 0) + (n2 > 0.10 ? 1 : 0) + (n3 > 0.10 ? 1 : 0) + (n4 > 0.10 ? 1 : 0) >= 3) {
+                            nearGreen = true;
+                        }
+                    }
+
+                    if (nearGreen) {
+                        classMap[idx] = 1;
+                        denseVegCount++;
+                        vdviVegSum += Math.max(0.05, vd);
+                        continue;
+                    }
+
+                    // --- Deteksi Tanah Basah / Lempung Jenuh Air / Rembesan ---
+                    const isWetSoil = (
+                        vd <= 0.04 &&
+                        (
+                            // Tanah coklat tua/lumpur lembab
+                            (vVal >= 0.05 && vVal <= 0.33 && hDeg >= 6 && hDeg <= 52 && sVal >= 0.12) ||
+                            // Zona rembesan gelap / tanah jenuh air di lereng
+                            (vVal >= 0.04 && vVal <= 0.25 && rb >= -0.02 && sVal < 0.35 && r >= b - 6)
+                        )
+                    );
+
+                    if (isWetSoil) {
+                        classMap[idx] = 4;
+                        wetSoilCount++;
+                        if (yRatio > 0.55) lowerSlopeWetBonus++; // Rembesan di kaki lereng lebih kritis secara geoteknik
+                        continue;
+                    }
+
+                    // --- Deteksi Tanah Kupasan / Mahkota Longsor / Laterit Merah-Coklat-Kuning ---
+                    const isBareSoil = (
+                        vd <= 0.05 &&
+                        (
+                            (hDeg >= 6 && hDeg <= 48 && sVal >= 0.15 && vVal > 0.25) ||
+                            (rb > 0.08 && r > g && g >= b * 0.82 && vVal > 0.22)
+                        )
+                    );
+
+                    if (isBareSoil) {
+                        classMap[idx] = 3;
+                        bareSoilCount++;
+                        continue;
+                    }
+
+                    // --- Sisanya: Singkapan Batuan / Kerikil / Tanah Kering Padat Ber-albedo Tinggi ---
+                    classMap[idx] = 5;
+                    rockDryCount++;
+                }
+            }
+
+            const terrainPixels = Math.max(1, totalPixels - skyCount);
+
+            // 5. Estimasi Sudut Kemiringan Lereng & Kerapatan Alur Erosi Nyata dengan Sobel
+            // Buat medan luminansi terhalus (5x5 smoothing) agar Sobel membaca garis struktur kontur/tebing makro,
+            // bukan sekadar noise helai daun mikro.
+            const smoothLum = new Float32Array(totalPixels);
+            for (let y = 2; y < h - 2; y++) {
+                for (let x = 2; x < w - 2; x++) {
+                    let sum = 0;
+                    for (let dy = -2; dy <= 2; dy++) {
+                        const rowOffset = (y + dy) * w + x;
+                        sum += lum[rowOffset - 2] + lum[rowOffset - 1] + lum[rowOffset] + lum[rowOffset + 1] + lum[rowOffset + 2];
+                    }
+                    smoothLum[y * w + x] = sum / 25;
+                }
+            }
+
+            // Histogram 18 bin sudut orientasi lereng (0°..90°, tiap 5°) untuk mendapatkan sudut kontur dominan
+            const angleBins = new Float64Array(18);
+            const macroGrad = new Float32Array(totalPixels);
+            let weightedAngleSum = 0;
+            let weightTotal = 0;
+
+            let exposedPixelsForErosion = 0;
+            let gullyScarpEdges = 0;
+
+            for (let y = 3; y < h - 3; y++) {
+                for (let x = 3; x < w - 3; x++) {
+                    const idx = y * w + x;
+                    if (isSky[idx] === 1) continue;
+
+                    // Pastikan tidak berada tepat di perbatasan langit-bukit (buffer 2 piksel) agar garis cakrawala tidak membiaskan Sobel
+                    if (
+                        isSky[(y - 2) * w + x] || isSky[(y + 2) * w + x] ||
+                        isSky[y * w + (x - 2)] || isSky[y * w + (x + 2)] ||
+                        isSky[(y - 2) * w + (x - 2)] || isSky[(y - 2) * w + (x + 2)]
+                    ) {
+                        continue;
+                    }
+
+                    // Sobel 3x3 pada smoothLum untuk orientasi kemiringan struktural lereng
+                    const tl = smoothLum[(y - 1) * w + (x - 1)];
+                    const tc = smoothLum[(y - 1) * w + x];
+                    const tr = smoothLum[(y - 1) * w + (x + 1)];
+                    const ml = smoothLum[y * w + (x - 1)];
+                    const mr = smoothLum[y * w + (x + 1)];
+                    const bl = smoothLum[(y + 1) * w + (x - 1)];
+                    const bc = smoothLum[(y + 1) * w + x];
+                    const br = smoothLum[(y + 1) * w + (x + 1)];
+
+                    const gx = (-tl + tr) + (-2 * ml + 2 * mr) + (-bl + br);
+                    const gy = (-tl - 2 * tc - tr) + (bl + 2 * bc + br);
+                    const mMag = Math.hypot(gx, gy);
+                    macroGrad[idx] = mMag;
+
+                    const cls = classMap[idx];
+                    const isExposed = (cls === 3 || cls === 4 || cls === 5);
+
+                    if (mMag > 16) {
+                        // Sudut garis kontur terhadap sumbu horizontal:
+                        // Garis kontur mendatar memiliki Gy besar & Gx kecil -> atan2(|Gx|, |Gy|) mendekati 0° (Landai)
+                        // Garis tebing/gawir curam memiliki |Gx| >= |Gy| -> mendekati 45°..85° (Curam)
+                        const thetaDeg = Math.atan2(Math.abs(gx), Math.abs(gy)) * (180 / Math.PI);
+
+                        // Beri bobot lebih tinggi pada struktur tanah/batuan terbuka dibanding tajuk daun acak
+                        const structuralWeight = mMag * (isExposed ? 1.85 : 0.75);
+                        const bin = Math.min(17, Math.floor(thetaDeg / 5));
+                        angleBins[bin] += structuralWeight;
+
+                        // Batasi sudut struktural wajar (0°..72°) untuk rata-rata tertimbang
+                        const clampedTheta = Math.min(72, thetaDeg);
+                        weightedAngleSum += clampedTheta * structuralWeight;
+                        weightTotal += structuralWeight;
+                    }
+
+                    // Deteksi Alur Erosi / Retakan / Gawir (Scarp & Gully Density) pada piksel non-vegetasi menggunakan Sobel halus
+                    if (isExposed) {
+                        exposedPixelsForErosion++;
+                        const fMag = gradMag[idx];
+                        if (fMag > 52) {
+                            const fAngle = Math.atan2(Math.abs(fineGx[idx]), Math.abs(fineGy[idx])) * (180 / Math.PI);
+                            // Alur erosi air dan retakan gawir umumnya miring tajam / sub-vertikal (>28°)
+                            if (fAngle >= 28) {
+                                gullyScarpEdges++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Cari puncak histogram orientasi kontur dominan (menghaluskan 3 bin bertetangga)
+            let peakBin = 2;
+            let maxBinEnergy = -1;
+            for (let b = 0; b < 18; b++) {
+                const prev = b > 0 ? angleBins[b - 1] * 0.5 : 0;
+                const next = b < 17 ? angleBins[b + 1] * 0.5 : 0;
+                const energy = angleBins[b] + prev + next;
+                if (energy > maxBinEnergy) {
+                    maxBinEnergy = energy;
+                    peakBin = b;
+                }
+            }
+
+            const dominantBinAngle = peakBin * 5 + 2.5;
+            const meanWeightedAngle = weightTotal > 0 ? (weightedAngleSum / weightTotal) : 12;
+
+            // Gabungkan sudut dominan puncak kontur (60%) dan rata-rata gradien tertimbang (40%)
+            let estimatedSlopeDeg = weightTotal > 0
+                ? (0.60 * dominantBinAngle + 0.40 * meanWeightedAngle)
+                : 8;
+
+            // Kerapatan alur erosi / gawir pada permukaan terbuka (%)
+            const gullyDensityPct = exposedPixelsForErosion > 25
+                ? (gullyScarpEdges / exposedPixelsForErosion) * 100
+                : 0;
+
+            // Jika terdapat banyak gawir tajam pada tanah kupasan, koreksi sudut tebing lokal
+            if (gullyDensityPct > 18 && (bareSoilCount + wetSoilCount) / terrainPixels > 0.25) {
+                estimatedSlopeDeg = Math.max(estimatedSlopeDeg, 36 + Math.min(18, (gullyDensityPct - 18) * 0.6));
+            }
+
+            estimatedSlopeDeg = Math.max(5, Math.min(68, Math.round(estimatedSlopeDeg)));
+
+            // Persentase terhadap Piksel Medan Valid (Non-Langit)
+            const denseVegPct = (denseVegCount / terrainPixels) * 100;
+            const sparseVegPct = (sparseVegCount / terrainPixels) * 100;
+            const totalVegPct = denseVegPct + sparseVegPct;
+            const bareSoilPct = (bareSoilCount / terrainPixels) * 100;
+            const wetSoilPct = (wetSoilCount / terrainPixels) * 100;
+            const rockDryPct = (rockDryCount / terrainPixels) * 100;
+            const skyRatioPct = (skyCount / totalPixels) * 100;
+            const validTerrainPct = 100 - skyRatioPct;
+
+            const meanVegVdvi = (denseVegCount + sparseVegCount) > 0
+                ? vdviVegSum / (denseVegCount + sparseVegCount)
+                : 0;
+            const meanTerrainVdvi = vdviTerrainSum / terrainPixels;
+            const lowerWetRatio = wetSoilCount > 0 ? (lowerSlopeWetBonus / wetSoilCount) : 0;
+
+            // Peringatan ramah jika foto didominasi langit (>65%) atau medan terlalu sempit
+            if (skyRatioPct > 65) {
+                showBanner(
+                    `<strong>Perhatian Komposisi Foto:</strong> Sistem mendeteksi <strong>${skyRatioPct.toFixed(0)}% area langit/awan</strong> dan mengeluarkannya otomatis. Untuk akurasi optimal, arahkan kamera lebih fokus ke permukaan lereng.`,
+                    'warning'
+                );
+            } else if (rockDryPct > 72 && totalVegPct < 6 && bareSoilPct < 8) {
+                showBanner(
+                    `<strong>Info Objek Dominan:</strong> Citra didominasi permukaan keras/netral (${rockDryPct.toFixed(0)}%). Pastikan objek yang difoto adalah lereng alami atau tebing tanah, bukan bangunan/jalan dalam ruangan.`,
+                    'warning'
+                );
+            }
+
+            // Simpan ke dalam cvCache untuk visualisasi 4 tab & kalkulasi skor
+            cvCache = {
+                w,
+                h,
+                rgba,
+                classMap,
+                gradMag,
+                macroGrad,
+                skyRatioPct,
+                validTerrainPct,
+                denseVegPct,
+                sparseVegPct,
+                totalVegPct,
+                bareSoilPct,
+                wetSoilPct,
+                rockDryPct,
+                meanVegVdvi,
+                meanTerrainVdvi,
+                estimatedSlopeDeg,
+                gullyDensityPct,
+                lowerWetRatio
+            };
         }
 
-        // 4. Menerjemahkan Data Piksel menjadi Metrik Longsor (Logic yang Masuk Akal)
-        function generateResults(greenScore, darkScore, fileSeed) {
-            let vegRisk, soilRisk, drainRisk, slopeRisk;
-            let baseRisk = 0;
+        /**
+         * ============================================================================
+         * KALKULASI BOBOT GEOTEKNIK (WEIGHTED HAZARD SCORING) & PEMBARUAN UI HASIL
+         * ============================================================================
+         * Bobot Ilmiah:
+         * - Tutupan Vegetasi (VDVI & kerapatan kanopi) : 30%
+         * - Tanah Terbuka & Kejenuhan Air              : 25%
+         * - Kemiringan & Gawir Erosi Sobel             : 30%
+         * - Pemicu Hidrologi & Drainase Lapangan       : 15%
+         */
+        function computeGeotechnicalScoringAndRender() {
+            if (!cvCache) return;
 
-            // --- A. LOGIKA VEGETASI (Berdasarkan jumlah Hijau di gambar) ---
-            if(greenScore > 25) {
-                vegRisk = "Rapat (Hutan/Pepohonan)";
-                document.getElementById('vegScore').textContent = `Index Hijau: ${greenScore.toFixed(1)}% (Aman)`;
-                baseRisk += 10; // Risiko kecil
-            } else if(greenScore > 10) {
-                vegRisk = "Sedang (Semak/Rumput)";
-                document.getElementById('vegScore').textContent = `Index Hijau: ${greenScore.toFixed(1)}% (Waspada)`;
-                document.getElementById('vegScore').classList.replace('text-green-600', 'text-yellow-600');
-                baseRisk += 35; 
+            const {
+                skyRatioPct,
+                validTerrainPct,
+                denseVegPct,
+                sparseVegPct,
+                totalVegPct,
+                bareSoilPct,
+                wetSoilPct,
+                rockDryPct,
+                meanTerrainVdvi,
+                estimatedSlopeDeg,
+                gullyDensityPct,
+                lowerWetRatio
+            } = cvCache;
+
+            // 1. Sub-skor Kerentanan Vegetasi (0..100, makin minim vegetasi -> makin tinggi bahaya)
+            // Vegetasi rapat memberi perlindungan perakaran jauh lebih kuat daripada rumput tipis
+            const effectiveVegCover = Math.min(100, denseVegPct * 1.08 + sparseVegPct * 0.62);
+            let vegHazard = Math.max(6, Math.min(98, 100 - effectiveVegCover * 1.05));
+            if (meanTerrainVdvi > 0.18) vegHazard = Math.max(6, vegHazard - 8);
+
+            // 2. Sub-skor Tanah Kupasan & Kejenuhan (0..100)
+            // Tanah kupasan laterit + tanah jenuh air (terutama di kaki lereng) menaikkan kerentanan geser
+            const soilExposureIndex = bareSoilPct * 1.15 + wetSoilPct * (1.35 + 0.25 * lowerWetRatio) + rockDryPct * 0.20;
+            const soilHazard = Math.max(8, Math.min(98, soilExposureIndex * 1.22));
+
+            // 3. Sub-skor Kemiringan Lereng & Gawir Sobel (0..100)
+            let slopeBase = 10;
+            if (estimatedSlopeDeg <= 15) {
+                slopeBase = 8 + (estimatedSlopeDeg / 15) * 18; // 8..26
+            } else if (estimatedSlopeDeg <= 30) {
+                slopeBase = 26 + ((estimatedSlopeDeg - 15) / 15) * 32; // 26..58
+            } else if (estimatedSlopeDeg <= 45) {
+                slopeBase = 58 + ((estimatedSlopeDeg - 30) / 15) * 28; // 58..86
             } else {
-                vegRisk = "Minim (Lahan Terbuka/Gundul)";
-                document.getElementById('vegScore').textContent = `Index Hijau: ${greenScore.toFixed(1)}% (Kritis)`;
-                document.getElementById('vegScore').classList.replace('text-green-600', 'text-red-600');
-                baseRisk += 60; // Risiko besar
+                slopeBase = 86 + Math.min(12, (estimatedSlopeDeg - 45) * 0.6); // 86..98
+            }
+            const gullyBoost = Math.min(20, gullyDensityPct * 0.85);
+            const slopeHazard = Math.max(8, Math.min(98, slopeBase + gullyBoost));
+
+            // 4. Sub-skor Pemicu Hidrologi & Drainase (0..100)
+            // Menggabungkan indikasi optik kelembaban/alur air + kalibrasi curah hujan & retakan lapangan
+            const opticalDrainageRisk = Math.min(100, wetSoilPct * 1.5 + gullyDensityPct * 1.2);
+            const rainScore = rainState === 'heavy' ? 95 : (rainState === 'moderate' ? 52 : 10);
+            const fieldScore = fieldState === 'seepage' ? 95 : 10;
+            const calibratedTrigger = 0.40 * opticalDrainageRisk + 0.35 * rainScore + 0.25 * fieldScore;
+            const hydroHazard = Math.max(8, Math.min(99, calibratedTrigger));
+
+            // Total Weighted Hazard Score
+            let weightedRisk = (
+                0.30 * vegHazard +
+                0.25 * soilHazard +
+                0.30 * slopeHazard +
+                0.15 * hydroHazard
+            );
+
+            // Sinergi Kritis Geoteknik: Lereng curam (>32°) + lahan terbuka + hujan lebat / rembesan retakan
+            if (estimatedSlopeDeg >= 32 && (bareSoilPct + wetSoilPct) > 35) {
+                if (rainState === 'heavy') weightedRisk += 7;
+                if (fieldState === 'seepage') weightedRisk += 7;
             }
 
-            // --- B. LOGIKA TANAH & DRAINASE (Berdasarkan area Gelap/Basah di gambar) ---
-            if(darkScore > 40) {
-                soilRisk = "Tanah Liat Basah/Jenuh Air";
-                drainRisk = "Buruk (Terindikasi Genangan)";
-                baseRisk += 30;
-            } else if (darkScore > 15) {
-                soilRisk = "Lempung Berpasir";
-                drainRisk = "Sedang (Resapan Normal)";
-                baseRisk += 15;
-            } else {
-                soilRisk = "Tanah Kering / Berbatu";
-                drainRisk = "Baik (Tidak Menahan Air)";
-                baseRisk += 5;
-            }
+            const finalRisk = Math.max(5, Math.min(98, Math.round(weightedRisk)));
 
-            // --- C. LOGIKA KEMIRINGAN (Menggunakan deterministic seed agar konsisten) ---
-            if(fileSeed > 70) {
-                slopeRisk = "Sangat Curam (>40°)";
-                baseRisk += 25;
-            } else if(fileSeed > 30) {
-                slopeRisk = "Miring (15°-40°)";
-                baseRisk += 15;
-            } else {
-                slopeRisk = "Landai (<15°)";
-                baseRisk += 5;
+            // Tingkat Keyakinan Citra (Confidence Score) berdasarkan proporsi piksel medan valid & ketajaman kontras
+            let confidence = 94;
+            if (skyRatioPct > 45) {
+                confidence -= Math.round((skyRatioPct - 45) * 0.85);
             }
+            if (rockDryPct > 75 && totalVegPct < 5 && bareSoilPct < 5) {
+                confidence -= 18;
+            }
+            confidence = Math.max(42, Math.min(97, confidence));
 
-            // --- D. KALKULASI FINAL & TAMPILAN ---
-            // Pastikan persentase max 98%
-            let finalRisk = Math.min(Math.round(baseRisk), 98);
-            
-            document.getElementById('resVeg').textContent = vegRisk;
-            document.getElementById('resSoil').textContent = soilRisk;
-            document.getElementById('resDrain').textContent = drainRisk;
-            document.getElementById('resSlope').textContent = slopeRisk;
-            
-            const riskCard = document.getElementById('riskCard');
+            // --- Update Gauge & Status Utama ---
+            const gaugeArc = document.getElementById('gaugeArc');
             const resPercentage = document.getElementById('resPercentage');
-            const riskStatus = document.getElementById('riskStatus');
-            const resConclusion = document.getElementById('resConclusion');
+            const riskStatusBadge = document.getElementById('riskStatusBadge');
+            const riskTagline = document.getElementById('riskTagline');
+            const confidenceBadge = document.getElementById('confidenceBadge');
 
-            resPercentage.textContent = finalRisk + "%";
+            resPercentage.textContent = `${finalRisk}%`;
+            const dashOffset = GAUGE_CIRCUMFERENCE * (1 - finalRisk / 100);
+            gaugeArc.style.strokeDashoffset = dashOffset.toFixed(2);
 
-            // Pewarnaan & Kesimpulan berdasarkan persentase
-            if(finalRisk >= 75) {
-                riskCard.className = "p-5 rounded-2xl mb-4 text-center text-white shadow-md bg-red-500";
-                riskStatus.textContent = "SIAGA LONGSOR";
-                resConclusion.innerHTML = `Berdasarkan analisis piksel, gambar ini menunjukkan <b>sedikitnya area hijau (vegetasi)</b> atau kondisi tanah yang rawan. Dengan perkiraan <b>${slopeRisk}</b>, risiko longsor mencapai <b>${finalRisk}%</b>. Diperlukan tindakan mitigasi segera jika terjadi hujan lebat.`;
-            } else if(finalRisk >= 40) {
-                riskCard.className = "p-5 rounded-2xl mb-4 text-center text-white shadow-md bg-yellow-500";
-                riskStatus.textContent = "WASPADA TINGkat MENENGAH";
-                resConclusion.innerHTML = `Kawasan ini memiliki risiko longsor sebesar <b>${finalRisk}%</b>. Tutupan vegetasi <b>${vegRisk.toLowerCase()}</b> memberikan sedikit perlindungan, namun faktor drainase yang <b>${drainRisk.toLowerCase()}</b> harus diperhatikan.`;
+            confidenceBadge.textContent = `Keyakinan Citra: ${confidence}%`;
+            confidenceBadge.className = confidence >= 75
+                ? 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200';
+
+            let statusText = '';
+            let strokeHex = '#10b981';
+
+            if (finalRisk >= 78) {
+                statusText = 'AWAS / KRITIS';
+                strokeHex = '#e11d48';
+                riskStatusBadge.className = 'inline-block text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2 bg-rose-100 text-rose-800 border border-rose-200';
+                riskTagline.textContent = 'Kombinasi kemiringan tajam, minimnya pengikat akar, atau kejenuhan tanah menunjukkan potensi longsor sangat tinggi.';
+            } else if (finalRisk >= 58) {
+                statusText = 'SIAGA TINGGI';
+                strokeHex = '#f97316';
+                riskStatusBadge.className = 'inline-block text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2 bg-orange-100 text-orange-800 border border-orange-200';
+                riskTagline.textContent = 'Lereng memiliki zona tanah terbuka/lembab yang rentan mengalami keruntuhan geser apabila terpicu hujan deras.';
+            } else if (finalRisk >= 36) {
+                statusText = 'WASPADA MENENGAH';
+                strokeHex = '#eab308';
+                riskStatusBadge.className = 'inline-block text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2 bg-amber-100 text-amber-800 border border-amber-200';
+                riskTagline.textContent = 'Tutupan vegetasi sebagian menahan erosi permukaan, namun kemiringan dan drainase lereng tetap perlu dipantau.';
             } else {
-                riskCard.className = "p-5 rounded-2xl mb-4 text-center text-white shadow-md bg-green-500";
-                riskStatus.textContent = "RELATIF AMAN";
-                resConclusion.innerHTML = `Analisis warna menunjukkan area ini memiliki vegetasi yang cukup (<b>${vegRisk.toLowerCase()}</b>) dengan persentase risiko longsor yang rendah (<b>${finalRisk}%</b>). Tanah cenderung stabil pada kondisi normal.`;
+                statusText = 'RELATIF AMAN';
+                strokeHex = '#10b981';
+                riskStatusBadge.className = 'inline-block text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2 bg-emerald-100 text-emerald-800 border border-emerald-200';
+                riskTagline.textContent = 'Kerapatan vegetasi efektif mengikat lapisan tanah permukaan dengan sudut kemiringan yang relatif stabil.';
+            }
+
+            gaugeArc.style.stroke = strokeHex;
+            riskStatusBadge.textContent = statusText;
+
+            // --- Update 4 Kartu Metrik Geoteknik ---
+            // 1. Vegetasi
+            const metricVegTitle = document.getElementById('metricVegTitle');
+            const metricVegSub = document.getElementById('metricVegSub');
+            const barVeg = document.getElementById('barVeg');
+
+            if (totalVegPct >= 55 && denseVegPct >= 25) {
+                metricVegTitle.textContent = 'Rapat (Kanopi Kuat)';
+                barVeg.className = 'h-full rounded-full transition-all duration-500 bg-emerald-500';
+            } else if (totalVegPct >= 25) {
+                metricVegTitle.textContent = 'Sedang (Semak/Rumput)';
+                barVeg.className = 'h-full rounded-full transition-all duration-500 bg-amber-500';
+            } else {
+                metricVegTitle.textContent = 'Minim / Lahan Kupasan';
+                barVeg.className = 'h-full rounded-full transition-all duration-500 bg-rose-500';
+            }
+            metricVegSub.textContent = `Tutupan ${totalVegPct.toFixed(1)}% • VDVI ${meanTerrainVdvi >= 0 ? '+' : ''}${meanTerrainVdvi.toFixed(2)}`;
+            barVeg.style.width = `${Math.min(100, Math.max(6, totalVegPct)).toFixed(0)}%`;
+
+            // 2. Kondisi Tanah
+            const metricSoilTitle = document.getElementById('metricSoilTitle');
+            const metricSoilSub = document.getElementById('metricSoilSub');
+            const barSoil = document.getElementById('barSoil');
+
+            if (wetSoilPct >= 24) {
+                metricSoilTitle.textContent = 'Lempung Lembab / Jenuh';
+                barSoil.className = 'h-full rounded-full transition-all duration-500 bg-purple-600';
+            } else if (bareSoilPct >= 25) {
+                metricSoilTitle.textContent = 'Tanah Kupasan Terbuka';
+                barSoil.className = 'h-full rounded-full transition-all duration-500 bg-orange-500';
+            } else if (rockDryPct >= 45) {
+                metricSoilTitle.textContent = 'Singkapan Batuan / Kering';
+                barSoil.className = 'h-full rounded-full transition-all duration-500 bg-slate-500';
+            } else {
+                metricSoilTitle.textContent = 'Tertutup Humus Vegetasi';
+                barSoil.className = 'h-full rounded-full transition-all duration-500 bg-emerald-500';
+            }
+            metricSoilSub.textContent = `Terbuka ${bareSoilPct.toFixed(1)}% • Lembab ${wetSoilPct.toFixed(1)}%`;
+            barSoil.style.width = `${Math.round(soilHazard)}%`;
+
+            // 3. Estimasi Kemiringan Sobel
+            const metricSlopeTitle = document.getElementById('metricSlopeTitle');
+            const metricSlopeSub = document.getElementById('metricSlopeSub');
+            const barSlope = document.getElementById('barSlope');
+
+            let slopeCategory = '';
+            if (estimatedSlopeDeg > 40) {
+                slopeCategory = 'Sangat Curam';
+                barSlope.className = 'h-full rounded-full transition-all duration-500 bg-rose-600';
+            } else if (estimatedSlopeDeg >= 25) {
+                slopeCategory = 'Curam Menengah';
+                barSlope.className = 'h-full rounded-full transition-all duration-500 bg-amber-500';
+            } else if (estimatedSlopeDeg >= 15) {
+                slopeCategory = 'Agak Miring';
+                barSlope.className = 'h-full rounded-full transition-all duration-500 bg-blue-500';
+            } else {
+                slopeCategory = 'Landai';
+                barSlope.className = 'h-full rounded-full transition-all duration-500 bg-emerald-500';
+            }
+            metricSlopeTitle.textContent = `±${estimatedSlopeDeg}° (${slopeCategory})`;
+            metricSlopeSub.textContent = ` Indeks Gawir/Alur: ${gullyDensityPct.toFixed(1)}%`;
+            barSlope.style.width = `${Math.round(slopeHazard)}%`;
+
+            // 4. Drainase & Pemicu Hidrologi
+            const metricDrainTitle = document.getElementById('metricDrainTitle');
+            const metricDrainSub = document.getElementById('metricDrainSub');
+            const barDrain = document.getElementById('barDrain');
+
+            if (hydroHazard >= 70) {
+                metricDrainTitle.textContent = 'Kritis (Tekanan Pori Tinggi)';
+                barDrain.className = 'h-full rounded-full transition-all duration-500 bg-rose-600';
+            } else if (hydroHazard >= 42) {
+                metricDrainTitle.textContent = 'Waspada Limpasan Air';
+                barDrain.className = 'h-full rounded-full transition-all duration-500 bg-amber-500';
+            } else {
+                metricDrainTitle.textContent = 'Resapan & Aliran Baik';
+                barDrain.className = 'h-full rounded-full transition-all duration-500 bg-emerald-500';
+            }
+            const rainLabel = rainState === 'heavy' ? 'Hujan >2j' : (rainState === 'moderate' ? 'Hujan Sedang' : 'Cuaca Kering');
+            metricDrainSub.textContent = `${rainLabel}${fieldState === 'seepage' ? ' + Retakan' : ''}`;
+            barDrain.style.width = `${Math.round(hydroHazard)}%`;
+
+            // --- Update Bar Komposisi Piksel ---
+            const terrainScale = validTerrainPct / 100;
+            document.getElementById('segBarVeg').style.width = `${(totalVegPct * terrainScale).toFixed(1)}%`;
+            document.getElementById('segBarBare').style.width = `${(bareSoilPct * terrainScale).toFixed(1)}%`;
+            document.getElementById('segBarWet').style.width = `${(wetSoilPct * terrainScale).toFixed(1)}%`;
+            document.getElementById('segBarRock').style.width = `${(rockDryPct * terrainScale).toFixed(1)}%`;
+            document.getElementById('segBarSky').style.width = `${skyRatioPct.toFixed(1)}%`;
+
+            document.getElementById('terrainValidText').textContent = `Medan Valid: ${validTerrainPct.toFixed(1)}%`;
+            document.getElementById('pctVegText').textContent = `${totalVegPct.toFixed(1)}%`;
+            document.getElementById('pctBareText').textContent = `${bareSoilPct.toFixed(1)}%`;
+            document.getElementById('pctWetText').textContent = `${wetSoilPct.toFixed(1)}%`;
+            document.getElementById('pctRockText').textContent = `${rockDryPct.toFixed(1)}%`;
+            document.getElementById('pctSkyText').textContent = `${skyRatioPct.toFixed(1)}% dari foto`;
+
+            // --- Narasi Kesimpulan Geoteknik & Rekomendasi Mitigasi Spesifik ---
+            const resConclusion = document.getElementById('resConclusion');
+            const mitigationList = document.getElementById('mitigationList');
+
+            resConclusion.innerHTML =
+                `Dari <strong>${validTerrainPct.toFixed(1)}% piksel medan aktif</strong> (setelah mengeliminasi ${skyRatioPct.toFixed(1)}% area langit), ` +
+                `terdeteksi tutupan vegetasi sebesar <strong>${totalVegPct.toFixed(1)}%</strong> (${denseVegPct.toFixed(1)}% kanopi rapat &amp; ${sparseVegPct.toFixed(1)}% semak), ` +
+                `tanah terbuka/kupasan <strong>${bareSoilPct.toFixed(1)}%</strong>, serta zona lembab/jenuh air <strong>${wetSoilPct.toFixed(1)}%</strong>. ` +
+                `Konvolusi gradien <em>Sobel</em> mengestimasi sudut kemiringan dominan sekitar <strong>±${estimatedSlopeDeg}°</strong> dengan kerapatan alur erosi/gawir <strong>${gullyDensityPct.toFixed(1)}%</strong>, menghasilkan skor potensi longsor <strong>${finalRisk}% (${statusText})</strong>.`;
+
+            const recommendations = [];
+
+            if (finalRisk >= 75 || (rainState === 'heavy' && finalRisk >= 58)) {
+                recommendations.push('<strong>Evakuasi & Pembatasan Akses:</strong> Jauhi area mahkota tebing dan jalur luncuran kaki lereng, terutama saat hujan lebat berlangsung lebih dari 2 jam.');
+            }
+            if (bareSoilPct >= 20 || fieldState === 'seepage') {
+                recommendations.push('<strong>Penutupan Retakan & Terpal Darurat:</strong> Tutup retakan tarik di puncak lereng dengan tanah lempung padat atau terpal kedap guna mencegah infiltrasi air hujan langsung ke bidang gelincir.');
+            }
+            if (wetSoilPct >= 18 || gullyDensityPct >= 12) {
+                recommendations.push('<strong>Saluran Drainase Kedap & Sulingan:</strong> Buat saluran pengelak air permukaan (<em>interceptor drain</em>) di bagian atas tebing dan pipa sulingan (<em>weep hole</em>) pada zona rembesan kaki lereng.');
+            }
+            if (estimatedSlopeDeg >= 28) {
+                recommendations.push('<strong>Rekayasa Geoteknik Lereng:</strong> Terapkan pemotongan kemiringan berjenjang (<em>terasering/benching</em>) atau perkuatan dinding penahan tanah / bronjong batu pada kaki tebing curam.');
+            }
+            if (totalVegPct < 45) {
+                recommendations.push('<strong>Bioengineering Revegetasi:</strong> Tanami permukaan terbuka dengan tanaman berakar menghunjam kuat dan rapat seperti akar wangi (<em>Vetiveria zizanioides</em>), bambu, atau kaliandra.');
+            }
+            if (recommendations.length === 0) {
+                recommendations.push('<strong>Pemeliharaan Vegetasi Penutup:</strong> Pertahankan kerapatan pohon berakar dalam dan cegah pembukaan lahan atau pemotongan kaki lereng tanpa perkuatan.');
+                recommendations.push('<strong>Inspeksi Berkala Musim Hujan:</strong> Pantau kelancaran saluran drainase alami agar tidak terjadi pembendungan air di punggung lereng.');
+            }
+
+            mitigationList.innerHTML = recommendations
+                .map(item => `<li class="flex items-start gap-2"><span class="text-blue-600 font-extrabold mt-0.5">•</span><span>${item}</span></li>`)
+                .join('');
+        }
+
+        /**
+         * ============================================================================
+         * VISUALISASI PEMBUKTIAN ANALISIS (4 INTERACTIVE OVERLAY MODES)
+         * ============================================================================
+         */
+        function updateTabButtonsUI(activeMode) {
+            document.querySelectorAll('.mode-tab').forEach(btn => {
+                const isSelected = btn.getAttribute('data-mode') === activeMode;
+                btn.className = isSelected
+                    ? 'mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all bg-white text-blue-700 shadow-sm'
+                    : 'mode-tab py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900';
+            });
+        }
+
+        function setOverlayMode(mode) {
+            currentMode = mode;
+            updateTabButtonsUI(mode);
+            renderOverlayMode(mode);
+        }
+
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+            btn.addEventListener('click', function () {
+                setOverlayMode(this.getAttribute('data-mode'));
+            });
+        });
+
+        function renderOverlayMode(mode) {
+            if (!loadedImage || !cvCache) return;
+
+            const dw = displayCanvas.width;
+            const dh = displayCanvas.height;
+            displayCtx.clearRect(0, 0, dw, dh);
+
+            if (mode === 'original') {
+                displayCtx.drawImage(loadedImage, 0, 0, dw, dh);
+                modeLegend.classList.remove('hidden');
+                modeLegend.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span>Menampilkan citra optik asli tanpa lapisan filter.</span>
+                        <span class="font-bold text-slate-700">${origWidth}×${origHeight}px</span>
+                    </div>`;
+                return;
+            }
+
+            const { w, h, rgba, classMap, gradMag, estimatedSlopeDeg } = cvCache;
+            const overlayCanvas = document.createElement('canvas');
+            overlayCanvas.width = w;
+            overlayCanvas.height = h;
+            const oCtx = overlayCanvas.getContext('2d');
+            const outImg = oCtx.createImageData(w, h);
+            const out = outImg.data;
+
+            if (mode === 'segmentation') {
+                // Mode 2: Segmentasi Lahan Transparan di atas tekstur asli
+                for (let i = 0; i < w * h; i++) {
+                    const p = i * 4;
+                    const r = rgba[p];
+                    const g = rgba[p + 1];
+                    const b = rgba[p + 2];
+                    const cls = classMap[i];
+
+                    let cr = r, cg = g, cb = b, alphaMix = 0.58;
+                    if (cls === 0) {
+                        // Biru Muda = Langit Diabaikan (pola garis diagonal halus)
+                        const x = i % w;
+                        const y = (i / w) | 0;
+                        const stripe = ((x + y) % 8 < 4);
+                        cr = stripe ? 56 : 125;
+                        cg = stripe ? 189 : 211;
+                        cb = stripe ? 248 : 252;
+                        alphaMix = 0.62;
+                    } else if (cls === 1) {
+                        // Hijau Zamrud = Vegetasi Rapat
+                        cr = 16; cg = 185; cb = 129;
+                    } else if (cls === 2) {
+                        // Hijau Limau = Semak / Rumput
+                        cr = 132; cg = 204; cb = 22;
+                    } else if (cls === 3) {
+                        // Oranye Kemerahan = Tanah Kupasan / Mahkota Longsor
+                        cr = 249; cg = 115; cb = 22;
+                        alphaMix = 0.65;
+                    } else if (cls === 4) {
+                        // Ungu / Nila = Zona Lembab / Jenuh Air
+                        cr = 139; cg = 92; cb = 246;
+                        alphaMix = 0.66;
+                    } else {
+                        // Abu Kebiruan = Batuan / Permukaan Kering
+                        cr = 148; cg = 163; cb = 184;
+                        alphaMix = 0.40;
+                    }
+
+                    out[p]     = Math.round(r * (1 - alphaMix) + cr * alphaMix);
+                    out[p + 1] = Math.round(g * (1 - alphaMix) + cg * alphaMix);
+                    out[p + 2] = Math.round(b * (1 - alphaMix) + cb * alphaMix);
+                    out[p + 3] = 255;
+                }
+
+                oCtx.putImageData(outImg, 0, 0);
+                displayCtx.drawImage(overlayCanvas, 0, 0, dw, dh);
+
+                modeLegend.classList.remove('hidden');
+                modeLegend.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></i>Vegetasi</span>
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block"></i>Tanah Kupasan</span>
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-violet-500 inline-block"></i>Lembab/Jenuh</span>
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-sky-400 inline-block"></i>Langit (Diabaikan)</span>
+                    </div>`;
+            } else if (mode === 'sobel') {
+                // Mode 3: Visualisasi Gradien Tepi Topografi Sobel + Garis Vektor Kemiringan Dominan
+                for (let i = 0; i < w * h; i++) {
+                    const p = i * 4;
+                    const cls = classMap[i];
+
+                    if (cls === 0) {
+                        // Langit digelapkan
+                        out[p] = 15; out[p + 1] = 23; out[p + 2] = 42; out[p + 3] = 255;
+                        continue;
+                    }
+
+                    const mag = Math.min(255, gradMag[i] * 1.35);
+                    const norm = mag / 255;
+
+                    if (cls === 3 || cls === 4) {
+                        // Tepi pada tanah terbuka/lembab disorot merah-oranye terang (indikasi alur erosi/gawir)
+                        out[p]     = Math.min(255, Math.round(25 + norm * 255));
+                        out[p + 1] = Math.min(255, Math.round(18 + norm * 115));
+                        out[p + 2] = Math.min(255, Math.round(28 + norm * 45));
+                    } else {
+                        // Tepi kontur vegetasi/batuan disorot sian-hijau ilmiah
+                        out[p]     = Math.min(255, Math.round(12 + norm * 45));
+                        out[p + 1] = Math.min(255, Math.round(24 + norm * 215));
+                        out[p + 2] = Math.min(255, Math.round(38 + norm * 235));
+                    }
+                    out[p + 3] = 255;
+                }
+
+                oCtx.putImageData(outImg, 0, 0);
+                displayCtx.drawImage(overlayCanvas, 0, 0, dw, dh);
+
+                // Gambar indikator garis sudut kemiringan dominan di tengah kanvas
+                const cx = dw / 2;
+                const cy = dh * 0.56;
+                const lineRadius = Math.min(dw, dh) * 0.28;
+                const rad = (estimatedSlopeDeg * Math.PI) / 180;
+
+                displayCtx.save();
+                // Garis referensi horizontal putus-putus
+                displayCtx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                displayCtx.lineWidth = 1.5;
+                displayCtx.setLineDash([5, 4]);
+                displayCtx.beginPath();
+                displayCtx.moveTo(cx - lineRadius, cy);
+                displayCtx.lineTo(cx + lineRadius, cy);
+                displayCtx.stroke();
+
+                // Garis vektor kemiringan lereng dominan Sobel
+                displayCtx.setLineDash([]);
+                displayCtx.strokeStyle = '#facc15';
+                displayCtx.lineWidth = 3;
+                displayCtx.beginPath();
+                displayCtx.moveTo(cx - Math.cos(rad) * lineRadius, cy + Math.sin(rad) * lineRadius);
+                displayCtx.lineTo(cx + Math.cos(rad) * lineRadius, cy - Math.sin(rad) * lineRadius);
+                displayCtx.stroke();
+
+                // Label sudut
+                displayCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                displayCtx.fillRect(cx - 56, cy - lineRadius - 24, 112, 20);
+                displayCtx.fillStyle = '#fde047';
+                displayCtx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
+                displayCtx.textAlign = 'center';
+                displayCtx.fillText(`Kontur Sobel ±${estimatedSlopeDeg}°`, cx, cy - lineRadius - 10);
+                displayCtx.restore();
+
+                modeLegend.classList.remove('hidden');
+                modeLegend.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-cyan-400 inline-block"></i>Tepi Kontur Medan</span>
+                        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block"></i>Gawir / Erosi Tanah</span>
+                        <span class="flex items-center gap-1"><i class="w-3 h-0.5 bg-yellow-400 inline-block"></i>Vektor Lereng ±${estimatedSlopeDeg}°</span>
+                    </div>`;
+            } else if (mode === 'heatmap') {
+                // Mode 4: Peta Risiko Piksel (Hijau -> Kuning -> Merah berdasarkan kerentanan lokal + gradien + pemicu)
+                const triggerOffset = (rainState === 'heavy' ? 0.16 : (rainState === 'moderate' ? 0.08 : 0)) + (fieldState === 'seepage' ? 0.12 : 0);
+
+                for (let i = 0; i < w * h; i++) {
+                    const p = i * 4;
+                    const r = rgba[p];
+                    const g = rgba[p + 1];
+                    const b = rgba[p + 2];
+                    const cls = classMap[i];
+
+                    if (cls === 0) {
+                        // Redupkan langit
+                        out[p]     = Math.round(r * 0.35 + 30);
+                        out[p + 1] = Math.round(g * 0.35 + 45);
+                        out[p + 2] = Math.round(b * 0.35 + 65);
+                        out[p + 3] = 255;
+                        continue;
+                    }
+
+                    const localEdge = Math.min(1, gradMag[i] / 140);
+                    let riskVal = 0.2;
+
+                    if (cls === 1) riskVal = 0.12 + localEdge * 0.12;
+                    else if (cls === 2) riskVal = 0.34 + localEdge * 0.16;
+                    else if (cls === 5) riskVal = 0.45 + localEdge * 0.25;
+                    else if (cls === 3) riskVal = 0.72 + localEdge * 0.24;
+                    else if (cls === 4) riskVal = 0.80 + localEdge * 0.20;
+
+                    riskVal = Math.min(1, riskVal + triggerOffset);
+
+                    // Gradien warna Hijau (0.0) -> Kuning (0.5) -> Merah (1.0)
+                    let hr, hg, hb;
+                    if (riskVal < 0.5) {
+                        const t = riskVal / 0.5;
+                        hr = Math.round(16 + t * (234 - 16));
+                        hg = Math.round(185 + t * (179 - 185));
+                        hb = Math.round(129 * (1 - t));
+                    } else {
+                        const t = (riskVal - 0.5) / 0.5;
+                        hr = Math.round(234 + t * (239 - 234));
+                        hg = Math.round(179 * (1 - t * 0.82));
+                        hb = Math.round(12 + t * 28);
+                    }
+
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    out[p]     = Math.round(gray * 0.32 + hr * 0.68);
+                    out[p + 1] = Math.round(gray * 0.32 + hg * 0.68);
+                    out[p + 2] = Math.round(gray * 0.32 + hb * 0.68);
+                    out[p + 3] = 255;
+                }
+
+                oCtx.putImageData(outImg, 0, 0);
+                displayCtx.drawImage(overlayCanvas, 0, 0, dw, dh);
+
+                modeLegend.classList.remove('hidden');
+                modeLegend.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-semibold">Kerentanan Lokal:</span>
+                        <div class="flex items-center gap-1.5">
+                            <span>Rendah</span>
+                            <div class="w-24 h-2 rounded-full bg-gradient-to-r from-emerald-500 via-yellow-400 to-rose-600"></div>
+                            <span>Kritis</span>
+                        </div>
+                    </div>`;
             }
         }
 
-        // 5. Tombol Reset
-        resetBtn.addEventListener('click', function() {
-            resultSection.classList.add('hidden');
-            analyzeBtn.classList.remove('hidden');
+        /**
+         * ============================================================================
+         * GENERATOR SAMPEL MEDAN REALISTIS PROSEDURAL (TANPA URL GAMBAR EKSTERNAL)
+         * ============================================================================
+         * Menggambar tekstur bukit, langit, awan, kanopi pohon, tanah kupasan laterit,
+         * alur erosi (gully), dan zona rembesan lembab agar dapat diuji nyata oleh CV.
+         */
+        function pseudoNoise(x, y, seed) {
+            const n = Math.sin(x * 12.9898 + y * 78.233 + seed * 37.719) * 43758.5453;
+            return n - Math.floor(n);
+        }
+
+        function generateRealisticSample(type) {
+            const sc = document.createElement('canvas');
+            const sw = 600;
+            const sh = 400;
+            sc.width = sw;
+            sc.height = sh;
+            const ctx = sc.getContext('2d');
+
+            if (type === 'forest') {
+                // 1. SAMPEL LERENG HUTAN RAPAT (Kemiringan landai ~14°, kanopi hijau bertekstur, langit biru cerah)
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, 155);
+                skyGrad.addColorStop(0, '#38bdf8');
+                skyGrad.addColorStop(1, '#bae6fd');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, sw, sh);
+
+                // Awan lembut di langit atas
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+                for (let cx = 80; cx <= 500; cx += 190) {
+                    ctx.beginPath();
+                    ctx.arc(cx, 52, 34, 0, Math.PI * 2);
+                    ctx.arc(cx + 28, 48, 26, 0, Math.PI * 2);
+                    ctx.arc(cx - 26, 56, 24, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Dasar lereng landai (~13° dari kiri ke kanan)
+                ctx.fillStyle = '#15803d';
+                ctx.beginPath();
+                ctx.moveTo(0, 118);
+                ctx.quadraticCurveTo(300, 148, sw, 178);
+                ctx.lineTo(sw, sh);
+                ctx.lineTo(0, sh);
+                ctx.closePath();
+                ctx.fill();
+
+                // Lapisan kontur tajuk hutan berlapis agar Sobel membaca kontur landai alami
+                for (let layer = 0; layer < 7; layer++) {
+                    const baseY = 128 + layer * 40;
+                    for (let x = -10; x <= sw + 20; x += 22) {
+                        const n = pseudoNoise(x, layer, 11);
+                        const cy = baseY + (x / sw) * 58 + (n - 0.5) * 14;
+                        const radius = 18 + n * 14;
+                        const gShade = Math.round(105 + n * 70);
+                        const rShade = Math.round(24 + n * 35);
+                        const bShade = Math.round(28 + n * 30);
+                        ctx.fillStyle = `rgb(${rShade}, ${gShade}, ${bShade})`;
+                        ctx.beginPath();
+                        ctx.arc(x, cy, radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Pucuk daun terkena cahaya matahari
+                        ctx.fillStyle = `rgba(74, 222, 128, 0.38)`;
+                        ctx.beginPath();
+                        ctx.arc(x - 4, cy - 5, radius * 0.55, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                loadPhotoSource(sc.toDataURL('image/jpeg', 0.92), 'Sampel: Hutan Rapat');
+            } else if (type === 'shrub') {
+                // 2. SAMPEL LERENG SEMAK LEMBAB CURAM (Langit mendung, kemiringan ~32°, semak bercampur lempung lembab)
+                const overcast = ctx.createLinearGradient(0, 0, 0, 140);
+                overcast.addColorStop(0, '#cbd5e1');
+                overcast.addColorStop(1, '#e2e8f0');
+                ctx.fillStyle = overcast;
+                ctx.fillRect(0, 0, sw, sh);
+
+                // Bidang miring utama (~33°)
+                ctx.fillStyle = '#854d0e';
+                ctx.beginPath();
+                ctx.moveTo(0, 58);
+                ctx.lineTo(sw, 245);
+                ctx.lineTo(sw, sh);
+                ctx.lineTo(0, sh);
+                ctx.closePath();
+                ctx.fill();
+
+                // Lapisan tanah lempung coklat & zona rembesan lembab di bagian bawah-tengah
+                for (let s = 0; s < 14; s++) {
+                    const yStart = 72 + s * 25;
+                    ctx.strokeStyle = s > 7 ? 'rgba(42, 26, 18, 0.65)' : 'rgba(146, 64, 14, 0.55)';
+                    ctx.lineWidth = 16;
+                    ctx.beginPath();
+                    ctx.moveTo(0, yStart);
+                    ctx.lineTo(sw, yStart + 185);
+                    ctx.stroke();
+                }
+
+                // Zona tanah basah / rembesan gelap di kaki lereng
+                ctx.fillStyle = '#291d16';
+                ctx.beginPath();
+                ctx.moveTo(0, 250);
+                ctx.lineTo(420, 345);
+                ctx.lineTo(sw, 360);
+                ctx.lineTo(sw, sh);
+                ctx.lineTo(0, sh);
+                ctx.closePath();
+                ctx.fill();
+
+                // Beberapa alur air miring
+                ctx.strokeStyle = '#1c1410';
+                ctx.lineWidth = 4;
+                for (let g = 0; g < 5; g++) {
+                    const gx = 70 + g * 95;
+                    const gy = 95 + g * 30;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, gy);
+                    ctx.bezierCurveTo(gx + 35, gy + 70, gx + 55, gy + 140, gx + 95, sh);
+                    ctx.stroke();
+                }
+
+                // Bercak semak & rumput kekuningan (~34% medan) mengikuti kemiringan 32°
+                for (let c = 0; c < 68; c++) {
+                    const n1 = pseudoNoise(c, 3, 27);
+                    const n2 = pseudoNoise(c, 9, 41);
+                    const bx = n1 * (sw - 30);
+                    const minSlopeY = 65 + (bx / sw) * 185;
+                    const by = minSlopeY + n2 * (sh - minSlopeY - 25);
+                    if (by > 335 && bx < 360) continue; // Biarkan kaki rembesan tetap terbuka
+
+                    const rad = 12 + n1 * 14;
+                    ctx.fillStyle = n2 > 0.45 ? '#65a30d' : '#4d7c0f';
+                    ctx.beginPath();
+                    ctx.arc(bx, by, rad, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                loadPhotoSource(sc.toDataURL('image/jpeg', 0.92), 'Sampel: Semak Lembab');
+            } else {
+                // 3. SAMPEL TEBING TANAH MERAH TERBUKA (Mahkota longsor laterit curam >45°, gawir erosi tajam)
+                const sky = ctx.createLinearGradient(0, 0, 0, 110);
+                sky.addColorStop(0, '#60a5fa');
+                sky.addColorStop(1, '#dbeafe');
+                ctx.fillStyle = sky;
+                ctx.fillRect(0, 0, sw, sh);
+
+                // Punggung tebing dengan sedikit rumput tipis di bibir atas mahkota
+                ctx.fillStyle = '#4d7c0f';
+                ctx.beginPath();
+                ctx.moveTo(0, 42);
+                ctx.lineTo(290, 68);
+                ctx.lineTo(sw, 138);
+                ctx.lineTo(sw, 165);
+                ctx.lineTo(0, 72);
+                ctx.closePath();
+                ctx.fill();
+
+                // Bidang kupasan tanah merah laterit curam
+                const soilGrad = ctx.createLinearGradient(0, 65, sw * 0.5, sh);
+                soilGrad.addColorStop(0, '#c2410c');
+                soilGrad.addColorStop(0.55, '#9a3412');
+                soilGrad.addColorStop(1, '#431407');
+                ctx.fillStyle = soilGrad;
+                ctx.beginPath();
+                ctx.moveTo(0, 65);
+                ctx.lineTo(285, 86);
+                ctx.lineTo(sw, 156);
+                ctx.lineTo(sw, sh);
+                ctx.lineTo(0, sh);
+                ctx.closePath();
+                ctx.fill();
+
+                // Tekstur butiran tanah merah & singkapan batuan lapuk
+                for (let i = 0; i < 220; i++) {
+                    const n1 = pseudoNoise(i, 1, 77);
+                    const n2 = pseudoNoise(i, 2, 91);
+                    const px = n1 * sw;
+                    const topEdge = 75 + (px / sw) * 85;
+                    const py = topEdge + n2 * (sh - topEdge);
+                    ctx.fillStyle = i % 3 === 0 ? 'rgba(217, 119, 6, 0.45)' : 'rgba(124, 45, 18, 0.5)';
+                    ctx.fillRect(px, py, 8 + n1 * 14, 5 + n2 * 8);
+                }
+
+                // Alur gawir longsoran & retakan erosi curam (>48°) agar Sobel mendeteksi sudut curam & gully
+                for (let g = 0; g < 14; g++) {
+                    const startX = 25 + g * 42;
+                    const startY = 72 + (startX / sw) * 84;
+                    ctx.strokeStyle = g % 2 === 0 ? '#27120b' : '#fdba74';
+                    ctx.lineWidth = g % 2 === 0 ? 4.5 : 2;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(startX + 95, startY + 145);
+                    ctx.lineTo(startX + 165, sh);
+                    ctx.stroke();
+                }
+
+                // Endapan lumpur jenuh di kaki longsoran
+                ctx.fillStyle = '#23140e';
+                ctx.beginPath();
+                ctx.moveTo(0, 335);
+                ctx.quadraticCurveTo(280, 315, sw, 355);
+                ctx.lineTo(sw, sh);
+                ctx.lineTo(0, sh);
+                ctx.closePath();
+                ctx.fill();
+
+                loadPhotoSource(sc.toDataURL('image/jpeg', 0.92), 'Sampel: Tebing Laterit');
+            }
+        }
+
+        document.querySelectorAll('.sample-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                generateRealisticSample(this.getAttribute('data-sample'));
+            });
+        });
+
+        /**
+         * Tombol Reset Penuh
+         */
+        resetBtn.addEventListener('click', function () {
+            clearScanTimers();
+            hideBanner();
+            cvCache = null;
+            loadedImage = null;
+            origWidth = 0;
+            origHeight = 0;
             imageInput.value = '';
+
+            resultSection.classList.add('hidden');
+            previewSection.classList.add('hidden');
+            overlayTabs.classList.add('hidden');
+            modeLegend.classList.add('hidden');
             introCard.classList.remove('hidden');
-            previewContainer.classList.add('hidden');
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     </script>
